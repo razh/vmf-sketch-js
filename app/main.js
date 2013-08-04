@@ -18,19 +18,57 @@ requirejs.config({
 });
 
 define(
-  [ 'models/rect' ],
-  function( Rect ) {
+  [ 'models/rect',
+    'collections/level',
+    'views/level-view' ],
+  function( Rect, Level, LevelView ) {
     'use strict';
 
-    var rect = new Rect();
-    console.log( rect.toJSON() );
+    var rect0 = new Rect({
+      x: 16,
+      y: 32,
+      width: 64,
+      height: 64
+    });
 
-    var rect1 = new Rect();
+    console.log( rect0.toJSON() );
+
+    var rect1 = new Rect({
+      x: 64,
+      y: 128,
+      width: 32,
+      height: 64
+    });
+
     console.log( rect1.toJSON() );
 
-    var rect2 = new Rect();
+    var rect2 = new Rect({
+      x: 128,
+      y: 64,
+      width: 32,
+      height: 32
+    });
+
     console.log( rect2.toJSON() );
 
+    var level = new Level();
 
+    level.add([
+      rect0,
+      rect1,
+      rect2
+    ]);
+
+    var canvas = document.getElementById( 'level-view' );
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    var levelView = new LevelView({
+      el: '#level-view',
+      collection: level
+    });
+
+    levelView.render();
   }
 );

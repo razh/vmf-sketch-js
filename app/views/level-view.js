@@ -12,7 +12,12 @@ define(
 
       render: function() {
         var ctx = this.$el.get(0).getContext( '2d' );
+
         ctx.clearRect( 0, 0, ctx.canvas.width, ctx.canvas.height );
+
+        this.collection.each(function( object ) {
+          object.draw( ctx );
+        });
       }
     });
 
