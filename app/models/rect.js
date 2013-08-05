@@ -1,6 +1,6 @@
 define(
-  [ 'backbone', 'id' ],
-  function( Backbone, Id ) {
+  [ 'backbone', 'id', 'math/geometry' ],
+  function( Backbone, Id, Geometry ) {
     'use strict';
 
     var Rect = Backbone.Model.extend({
@@ -14,6 +14,9 @@ define(
         };
       },
 
+      /**
+       * You've got rendering code in my model!
+       */
       draw: function( ctx ) {
         ctx.beginPath();
 
@@ -33,9 +36,24 @@ define(
 
       contains: function( x, y ) {
         var aabb = this.aabb();
+        return Geometry.aabbContains( x, y, aabb.x0, aabb.y0, aabb.x1, aabb.y1 );
+      },
 
-        return aabb.x0 <= x && x <= aabb.x1 &&
-               aabb.y0 <= y && y <= aabb.y1;
+      /**
+       * Determine if the point is close to a corner.
+       * Starting from bottom-right and going counterclockwise.
+       */
+      nearCorner: function( x, y, radius ) {
+        var aabb = this.aabb();
+
+        // Bottom right.
+      },
+
+      /**
+       * Determine if the point is close to an edge.
+       */
+      nearEdge: function() {
+
       },
 
       aabb: function() {

@@ -11,7 +11,7 @@ define(
       SELECT: 2
     };
 
-    var LevelViewInput = function( element, level ) {
+    var EditorViewInput = function( element, level ) {
       var mouse = new Mouse(),
           state = State.NONE;
 
@@ -61,7 +61,13 @@ define(
               width  = mouse.end.x - x,
               height = mouse.end.y - y;
 
-          level.add( new Rect( x, y, width, height ) );
+          level.add(new Rect({
+            x: x,
+            y: y,
+            width: width,
+            height: height
+          }));
+
           state = State.NONE;
         }
       };
@@ -145,12 +151,6 @@ define(
         mouseup: function() {
           mouse.down = false;
 
-          mouse.start.x = Number.NaN;
-          mouse.start.y = Number.NaN;
-
-          mouse.end.x = Number.NaN;
-          mouse.end.y = Number.NaN;
-
           switch ( state ) {
             case State.DRAW:
               DrawState.mouseup();
@@ -160,10 +160,16 @@ define(
               SelectState.mouseup();
               break;
           }
+
+          mouse.start.x = Number.NaN;
+          mouse.start.y = Number.NaN;
+
+          mouse.end.x = Number.NaN;
+          mouse.end.y = Number.NaN;
         }
       };
     };
 
-    return LevelViewInput;
+    return EditorViewInput;
   }
 );

@@ -1,11 +1,11 @@
 define(
   [ 'underscore',
     'backbone',
-    'views/level-view-input' ],
+    'views/editor-view-input' ],
   function( _, Backbone, Input ) {
     'use strict';
 
-    var LevelView = Backbone.View.extend({
+    var EditorView = Backbone.View.extend({
       initialize: function() {
         _.bindAll( this, 'render' );
         this.listenTo( this.collection, 'change add remove', this.render );
@@ -31,6 +31,6 @@ define(
       }
     });
 
-    return LevelView;
+    return EditorView;
   }
 );

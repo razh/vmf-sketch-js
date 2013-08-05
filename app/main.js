@@ -20,8 +20,8 @@ requirejs.config({
 define(
   [ 'models/rect',
     'collections/level',
-    'views/level-view' ],
-  function( Rect, Level, LevelView ) {
+    'views/editor-view' ],
+  function( Rect, Level, EditorView ) {
     'use strict';
 
     var rect0 = new Rect({
@@ -59,16 +59,16 @@ define(
       rect2
     ]);
 
-    var canvas = document.getElementById( 'level-view' );
+    var canvas = document.getElementById( 'editor-view' );
 
     canvas.width = 800;
     canvas.height = 600;
 
-    var levelView = new LevelView({
-      el: '#level-view',
+    var editorView = new EditorView({
+      el: '#editor-view',
       collection: level
     });
 
-    levelView.render();
+    editorView.render();
   }
 );
