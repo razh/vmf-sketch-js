@@ -18,10 +18,11 @@ requirejs.config({
 });
 
 define(
-  [ 'models/rect',
+  [ 'models/editor',
+    'models/rect',
     'collections/level',
     'views/editor-view' ],
-  function( Rect, Level, EditorView ) {
+  function( Editor, Rect, Level, EditorView ) {
     'use strict';
 
     var rect0 = new Rect({
@@ -64,8 +65,11 @@ define(
     canvas.width = 800;
     canvas.height = 600;
 
+    var editor = new Editor();
+
     var editorView = new EditorView({
       el: '#editor-view',
+      model: editor,
       collection: level
     });
 

@@ -2,7 +2,8 @@ define(function() {
   'use strict';
 
   return {
-    grid: 16,
-    snap:  8
+    DEFAULT: 0,
+    DRAW: 1,
+    SELECT: 2
   };
 });

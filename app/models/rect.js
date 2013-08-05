@@ -14,6 +14,22 @@ define(
         };
       },
 
+      initialize: function() {
+        // Make sure we handle negative dimensions.
+        var width  = this.attributes.width,
+            height = this.attributes.height;
+
+        if ( width < 0 ) {
+          this.attributes.x += width;
+          this.attributes.width = -width;
+        }
+
+        if ( height < 0 ) {
+          this.attributes.y += height;
+          this.attributes.height = -height;
+        }
+      },
+
       /**
        * You've got rendering code in my model!
        */

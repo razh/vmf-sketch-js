@@ -1,19 +1,16 @@
 define(
   [ 'config',
+    'models/editor-state',
     'models/rect',
     'input/mouse' ],
-  function( Config, Rect, Mouse ) {
+  function( Config, State, Rect, Mouse ) {
     'use strict';
 
-    var State = {
-      NONE: 0,
-      DRAW: 1,
-      SELECT: 2
-    };
-
-    var EditorViewInput = function( element, level ) {
-      var mouse = new Mouse(),
-          state = State.NONE;
+    /**
+     * Input helper class for EditorView.
+     */
+    var EditorViewInput = function( element, editor, level ) {
+      var mouse = new Mouse();
 
       // Array of selected objects.
       var selected = [];
@@ -31,10 +28,8 @@ define(
       }
 
       // Various LevelView input states.
-      var NoneState = {
+      var DefaultState = {
         mousedown: function() {
-          state = State.DRAW;
-
           // Hit test for rects.
           var rect;
           for ( var i = 0, l = level.size(); i < l; i++ ) {
@@ -47,14 +42,21 @@ define(
                 y: rect.get( 'y' )
               }];
 
-              state = State.SELECT;
-              break;
+              editor.set( 'state', State.SELECT );
+              return;
             }
           }
+
+          // Otherwise, start drawing.
+          editor.set( 'state', State.DRAW );
         }
       };
 
       var DrawState = {
+        mousemove: function() {
+          editor.trigger( 'change' );
+        },
+
         mouseup: function() {
           var x = mouse.start.x,
               y = mouse.start.y,
@@ -68,7 +70,7 @@ define(
             height: height
           }));
 
-          state = State.NONE;
+          editor.set( 'state', State.DEFAULT );
         }
       };
 
@@ -119,47 +121,50 @@ define(
         mouseup: function() {
           selected = [];
           offsets = [];
-          state = State.NONE;
+          editor.set( 'state', State.DEFAULT );
         }
       };
 
+      var states = [];
+
+      states[ State.DEFAULT ] = DefaultState;
+      states[ State.DRAW    ] = DrawState;
+      states[ State.SELECT  ] = SelectState;
+
+      // Helper function for accessing a specific event in each state.
+      function handleState( eventName ) {
+        var stateHandler = states[ editor.get( 'state' ) ],
+            eventHandler;
+
+        // Call the eventHandler function if it exists.
+        if ( stateHandler && ( eventHandler = stateHandler[ eventName ] ) ) {
+          eventHandler();
+        }
+      }
+
       // Input handlers.
       return {
+        mouse: mouse,
+
         mousedown: function( event ) {
           mouse.down = true;
 
           mouse.start = position( event );
           mouse.end = mouse.start;
 
-          switch ( state ) {
-            case State.NONE:
-              NoneState.mousedown();
-              break;
-          };
+          handleState( 'mousedown' );
         },
 
         mousemove: function( event ) {
           mouse.end = position( event );
 
-          switch ( state ) {
-            case State.SELECT:
-              SelectState.mousemove();
-              break;
-          }
+          handleState( 'mousemove' );
         },
 
         mouseup: function() {
           mouse.down = false;
 
-          switch ( state ) {
-            case State.DRAW:
-              DrawState.mouseup();
-              break;
-
-            case State.SELECT:
-              SelectState.mouseup();
-              break;
-          }
+          handleState( 'mouseup' );
 
           mouse.start.x = Number.NaN;
           mouse.start.y = Number.NaN;
