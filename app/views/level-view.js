@@ -1,13 +1,23 @@
 define(
   [ 'underscore',
-    'backbone' ],
-  function( _, Backbone ) {
+    'backbone',
+    'views/level-view-input' ],
+  function( _, Backbone, Input ) {
     'use strict';
 
     var LevelView = Backbone.View.extend({
       initialize: function() {
         _.bindAll( this, 'render' );
-        this.listenTo( this.collection, 'change', this.render );
+        this.listenTo( this.collection, 'change add remove', this.render );
+
+        // Setup controls.
+        this.input = new Input( this.el, this.collection );
+
+        this.$el.on({
+          mousedown: this.input.mousedown,
+          mousemove: this.input.mousemove,
+          mouseup: this.input.mouseup
+        });
       },
 
       render: function() {

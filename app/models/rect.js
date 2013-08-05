@@ -50,6 +50,46 @@ define(
           x1: x + width,
           y1: y + height
         };
+      },
+
+      /**
+       * Returns the distance between this to rect in terms
+       * of x and y components.
+       */
+      distanceTo: function( rect ) {
+        var aabb0 = this.aabb(),
+            aabb1 = rect.aabb();
+
+        // Distance from left edge of this to right edge of rect.
+        var leftRight = aabb1.x1 - aabb0.x0,
+            // Right edge of this to left edge of rect.
+            rightLeft = aabb1.x0 - aabb0.x1,
+            // Top edge of this to bottom edge of rect.
+            topBottom = aabb1.y1 - aabb0.y0,
+            // Bottom edge of this to top edge of rect.
+            bottomTop = aabb1.y0 - aabb0.y1;
+
+        // Left edges of this and rect.
+        var leftLeft     = aabb1.x0 - aabb0.x0,
+            // Right edges.
+            rightRight   = aabb1.x1 - aabb0.x1,
+            // Top edges.
+            topTop       = aabb1.y0 - aabb0.y0,
+            // Bottom edges.
+            bottomBottom = aabb1.y1 - aabb0.y1;
+
+        var left   = Math.abs( leftRight ) < Math.abs( leftLeft     ) ? leftRight : leftLeft,
+            right  = Math.abs( rightLeft ) < Math.abs( rightRight   ) ? rightLeft : rightRight,
+            top    = Math.abs( topBottom ) < Math.abs( topTop       ) ? topBottom : topTop,
+            bottom = Math.abs( bottomTop ) < Math.abs( bottomBottom ) ? bottomTop : bottomBottom;
+
+        var dx = Math.abs( left ) < Math.abs( right  ) ? left : right,
+            dy = Math.abs( top  ) < Math.abs( bottom ) ? top  : bottom;
+
+        return {
+          x: dx,
+          y: dy
+        };
       }
     });
 

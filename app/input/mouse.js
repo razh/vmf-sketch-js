@@ -1,20 +1,19 @@
 define(function() {
   'use strict';
 
-  // Mouse state container.
-  var Mouse = {
-    start: {
-      x: null,
-      y: null
-    },
+  function Mouse() {
+    this.start = {
+      x: Number.NaN,
+      y: Number.NaN
+    };
 
-    end: {
-      x: null,
-      y: null
-    },
+    this.end = {
+      x: Number.NaN,
+      y: Number.NaN
+    };
 
-    down: false
-  };
+    this.down = false;
+  }
 
   return Mouse;
 });

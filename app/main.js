@@ -61,8 +61,8 @@ define(
 
     var canvas = document.getElementById( 'level-view' );
 
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    canvas.width = 800;
+    canvas.height = 600;
 
     var levelView = new LevelView({
       el: '#level-view',
