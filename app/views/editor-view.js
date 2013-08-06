@@ -39,6 +39,8 @@ define(
             gridCountX  = Math.ceil( width  / gridSpacing ),
             gridCountY  = Math.ceil( height / gridSpacing );
 
+        ctx.beginPath();
+
         var i;
         for ( i = 1; i < gridCountX; i++ ) {
           ctx.moveTo( i * gridSpacing, 0 );
@@ -57,6 +59,11 @@ define(
         // Draw objects.
         this.collection.each(function( object ) {
           object.draw( ctx );
+        });
+
+        // Draw resize handlers on selected rects.
+        this.input.selected().forEach(function( object ) {
+          object.drawResizeHandlers( ctx );
         });
 
         if ( this.model.get( 'state' ) === State.DRAW ) {

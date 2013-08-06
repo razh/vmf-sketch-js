@@ -66,7 +66,7 @@ define(
           level.add(new Rect({
             x: x,
             y: y,
-            width: width,
+            width:  width,
             height: height
           }));
 
@@ -145,6 +145,10 @@ define(
       // Input handlers.
       return {
         mouse: mouse,
+
+        selected: function() {
+          return selected;
+        },
 
         mousedown: function( event ) {
           mouse.down = true;

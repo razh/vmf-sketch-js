@@ -34,11 +34,6 @@ define(
        * You've got rendering code in my model!
        */
       draw: function( ctx ) {
-        var x = this.get( 'x' ),
-            y = this.get( 'y' ),
-            width  = this.get( 'width' ),
-            height = this.get( 'height' );
-
         ctx.beginPath();
 
         ctx.rect(
@@ -53,9 +48,16 @@ define(
 
         ctx.strokeStyle = 'black';
         ctx.stroke();
+      },
+
+      drawResizeHandlers: function( ctx ) {
+        var x = this.get( 'x' ),
+            y = this.get( 'y' ),
+            width  = this.get( 'width' ),
+            height = this.get( 'height' );
 
         // Draw resize handlers.
-        var length     = 10,
+        var length     = 6,
             halfLength = 0.5 * length;
 
         ctx.beginPath();
@@ -67,6 +69,7 @@ define(
             x1 = x + width  - halfLength,
             y1 = y + height - halfLength;
 
+        // Starting from top-left corner and going clockwise.
         ctx.rect( x0, y0, length, length );
         ctx.rect( x0, y1, length, length );
         ctx.rect( x1, y0, length, length );
@@ -79,6 +82,7 @@ define(
             mx = x0 + halfWidth,
             my = y0 + halfHeight;
 
+        // Starting from left edge and going clockwise.
         ctx.rect( x0, my, length, length );
         ctx.rect( mx, y0, length, length );
         ctx.rect( x1, my, length, length );
@@ -90,8 +94,6 @@ define(
         ctx.strokeStyle = 'black';
         ctx.stroke();
       },
-
-      drawResizeHandlers: function() {},
 
       contains: function( x, y ) {
         var aabb = this.aabb();
