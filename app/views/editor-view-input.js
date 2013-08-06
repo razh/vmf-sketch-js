@@ -20,40 +20,42 @@ define(
       /**
        * Calculate relative position of MouseEvent on element.
        */
-      function position( event ) {
+      function mousePosition( event ) {
         return {
           x: event.pageX - element.offsetLeft,
           y: event.pageY - element.offsetTop
         };
       }
 
+      /**
+       * Grab object coordinates.
+       */
+      function position( object ) {
+        return {
+          x: object.get( 'x' ),
+          y: object.get( 'y' )
+        };
+      }
+
       // Various LevelView input states.
       var DefaultState = {
         mousedown: function() {
-          // Hit test for rects.
-          var rect;
-          for ( var i = 0, l = level.size(); i < l; i++ ) {
-            rect = level.get(i);
+          selected = level.hit( mouse.end.x, mouse.end.y );
+          // Grab the original (x, y) position of each object.
+          offsets = selected.map( position );
 
-            if ( rect.contains( mouse.end.x, mouse.end.y ) ) {
-              selected = [ rect ];
-              offsets = [{
-                x: rect.get( 'x' ),
-                y: rect.get( 'y' )
-              }];
-
-              editor.set( 'state', State.SELECT );
-              return;
-            }
+          // Enter select state only if we've selected something.
+          if ( selected.length ) {
+            editor.set( 'state', State.SELECT );
+          } else {
+            editor.set( 'state', State.DRAW );
           }
-
-          // Otherwise, start drawing.
-          editor.set( 'state', State.DRAW );
         }
       };
 
       var DrawState = {
         mousemove: function() {
+          // Draw temporary rect so we can see what we're drawing.
           editor.trigger( 'change' );
         },
 
@@ -63,12 +65,15 @@ define(
               width  = mouse.end.x - x,
               height = mouse.end.y - y;
 
-          level.add(new Rect({
-            x: x,
-            y: y,
-            width:  width,
-            height: height
-          }));
+          // Only add if width and height are nonzero.
+          if ( width && height ) {
+            level.add(new Rect({
+              x: x,
+              y: y,
+              width:  width,
+              height: height
+            }));
+          }
 
           editor.set( 'state', State.DEFAULT );
         }
@@ -119,17 +124,39 @@ define(
         },
 
         mouseup: function() {
-          selected = [];
-          offsets = [];
-          editor.set( 'state', State.DEFAULT );
+          editor.set( 'state', State.TRANSFORM );
+        }
+      };
+
+      var TransformState = {
+        mousedown: function() {
+          // Check if we're on a corner or an edge.
+
+          var hit = level.hit( mouse.end.x, mouse.end.y );
+          // If nothing, start drawing.
+          if ( !hit.length ) {
+            selected = [];
+            offsets = [];
+
+            editor.set( 'state', State.DRAW );
+            return;
+          }
+
+          selected = hit;
+          offsets = selected.map( position );
+          editor.set( 'state', State.SELECT );
+        },
+
+        mousemove: function() {
         }
       };
 
       var states = [];
 
-      states[ State.DEFAULT ] = DefaultState;
-      states[ State.DRAW    ] = DrawState;
-      states[ State.SELECT  ] = SelectState;
+      states[ State.DEFAULT   ] = DefaultState;
+      states[ State.DRAW      ] = DrawState;
+      states[ State.SELECT    ] = SelectState;
+      states[ State.TRANSFORM ] = TransformState;
 
       // Helper function for accessing a specific event in each state.
       function handleState( eventName ) {
@@ -153,14 +180,14 @@ define(
         mousedown: function( event ) {
           mouse.down = true;
 
-          mouse.start = position( event );
+          mouse.start = mousePosition( event );
           mouse.end = mouse.start;
 
           handleState( 'mousedown' );
         },
 
         mousemove: function( event ) {
-          mouse.end = position( event );
+          mouse.end = mousePosition( event );
 
           handleState( 'mousemove' );
         },

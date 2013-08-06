@@ -107,11 +107,18 @@ define(
       nearCorner: function( x, y, radius ) {
         var aabb = this.aabb();
 
+        var x0 = aabb.x0,
+            y0 = aabb.y0,
+            x1 = aabb.x1,
+            y1 = aabb.y1;
+
         // Distance (squared) to bottom right, and so on.
-        var bottomRight = Geometry.distanceSquared( x, y, aabb.x1, aabb.y1 ),
-            topRight    = Geometry.distanceSquared( x, y, aabb.x1, aabb.y0 ),
-            topLeft     = Geometry.distanceSquared( x, y, aabb.x0, aabb.y0 ),
-            bottomLeft  = Geometry.distanceSquared( x, y, aabb.x0, aabb.y1 );
+        var bottomRight = Geometry.distanceSquared( x, y, x1, y1 ),
+            topRight    = Geometry.distanceSquared( x, y, x1, y0 ),
+            topLeft     = Geometry.distanceSquared( x, y, x0, y0 ),
+            bottomLeft  = Geometry.distanceSquared( x, y, x0, y1 );
+
+        var radiusSquared = radius * radius;
       },
 
       /**
@@ -119,6 +126,18 @@ define(
        */
       nearEdge: function( x, y, radius ) {
         var aabb = this.aabb();
+
+        var x0 = aabb.x0,
+            y0 = aabb.y0,
+            x1 = aabb.x1,
+            y1 = aabb.y1;
+
+        var top    = Geometry.pointSegmentDistanceSquared( x, y, x0, y0, x1, y0 ),
+            right  = Geometry.pointSegmentDistanceSquared( x, y, x1, y0, x1, y1 ),
+            bottom = Geometry.pointSegmentDistanceSquared( x, y, x1, y1, x0, y1 ),
+            left   = Geometry.pointSegmentDistanceSquared( x, y, x1, y1, x0, y1 );
+
+        var radiusSquared = radius * radius;
       },
 
       aabb: function() {
@@ -145,11 +164,11 @@ define(
 
         // Distance from left edge of this to right edge of rect.
         var leftRight = aabb1.x1 - aabb0.x0,
-            // Right edge of this to left edge of rect.
+            // Right of this to left of rect.
             rightLeft = aabb1.x0 - aabb0.x1,
-            // Top edge of this to bottom edge of rect.
+            // Top of this to bottom of rect.
             topBottom = aabb1.y1 - aabb0.y0,
-            // Bottom edge of this to top edge of rect.
+            // Bottom of this to top of rect.
             bottomTop = aabb1.y0 - aabb0.y1;
 
         // Left edges of this and rect.

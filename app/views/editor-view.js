@@ -82,6 +82,10 @@ define(
           ctx.strokeStyle = 'black';
           ctx.stroke();
         }
+
+        ctx.fillStyle = 'black';
+        ctx.font = '20px Helvetica';
+        ctx.fillText( this.model.get( 'state' ), 20, 30 );
       }
     });
 
