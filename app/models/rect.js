@@ -34,6 +34,11 @@ define(
        * You've got rendering code in my model!
        */
       draw: function( ctx ) {
+        var x = this.get( 'x' ),
+            y = this.get( 'y' ),
+            width  = this.get( 'width' ),
+            height = this.get( 'height' );
+
         ctx.beginPath();
 
         ctx.rect(
@@ -48,7 +53,45 @@ define(
 
         ctx.strokeStyle = 'black';
         ctx.stroke();
+
+        // Draw resize handlers.
+        var length     = 10,
+            halfLength = 0.5 * length;
+
+        ctx.beginPath();
+
+        // Corners.
+        // Top lefts of resize handler rects.
+        var x0 = x - halfLength,
+            y0 = y - halfLength,
+            x1 = x + width  - halfLength,
+            y1 = y + height - halfLength;
+
+        ctx.rect( x0, y0, length, length );
+        ctx.rect( x0, y1, length, length );
+        ctx.rect( x1, y0, length, length );
+        ctx.rect( x1, y1, length, length );
+
+        // Edges.
+        var halfWidth  = 0.5 * width,
+            halfHeight = 0.5 * height,
+            // Middle of edges.
+            mx = x0 + halfWidth,
+            my = y0 + halfHeight;
+
+        ctx.rect( x0, my, length, length );
+        ctx.rect( mx, y0, length, length );
+        ctx.rect( x1, my, length, length );
+        ctx.rect( mx, y1, length, length );
+
+        ctx.fillStyle = 'white';
+        ctx.fill();
+
+        ctx.strokeStyle = 'black';
+        ctx.stroke();
       },
+
+      drawResizeHandlers: function() {},
 
       contains: function( x, y ) {
         var aabb = this.aabb();
@@ -62,14 +105,18 @@ define(
       nearCorner: function( x, y, radius ) {
         var aabb = this.aabb();
 
-        // Bottom right.
+        // Distance (squared) to bottom right, and so on.
+        var bottomRight = Geometry.distanceSquared( x, y, aabb.x1, aabb.y1 ),
+            topRight    = Geometry.distanceSquared( x, y, aabb.x1, aabb.y0 ),
+            topLeft     = Geometry.distanceSquared( x, y, aabb.x0, aabb.y0 ),
+            bottomLeft  = Geometry.distanceSquared( x, y, aabb.x0, aabb.y1 );
       },
 
       /**
        * Determine if the point is close to an edge.
        */
-      nearEdge: function() {
-
+      nearEdge: function( x, y, radius ) {
+        var aabb = this.aabb();
       },
 
       aabb: function() {

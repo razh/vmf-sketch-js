@@ -31,7 +31,30 @@ define(
             height = ctx.canvas.height;
 
         ctx.clearRect( 0, 0, width, height );
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+        ctx.fillRect(0, 0, width, height);
 
+        // Draw gridlines.
+        var gridSpacing = Config.grid,
+            gridCountX  = Math.ceil( width  / gridSpacing ),
+            gridCountY  = Math.ceil( height / gridSpacing );
+
+        var i;
+        for ( i = 1; i < gridCountX; i++ ) {
+          ctx.moveTo( i * gridSpacing, 0 );
+          ctx.lineTo( i * gridSpacing, height );
+        }
+
+        for ( i = 1; i < gridCountY; i++ ) {
+          ctx.moveTo( 0,     i * gridSpacing );
+          ctx.lineTo( width, i * gridSpacing );
+        }
+
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = 'rgba(255, 0, 0, 0.25)';
+        ctx.stroke();
+
+        // Draw objects.
         this.collection.each(function( object ) {
           object.draw( ctx );
         });

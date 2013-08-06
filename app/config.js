@@ -2,7 +2,7 @@ define(function() {
   'use strict';
 
   return {
-    grid: 16,
-    snap:  8
+    grid: 32,
+    snap: 12
   };
 });

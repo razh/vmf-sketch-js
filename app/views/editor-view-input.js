@@ -105,7 +105,7 @@ define(
               }
             });
 
-            // If within snapping distance, snap to nearest edge.
+            // If another rect is within snapping distance, snap to nearest edge.
             if ( Math.abs( min.x ) < Config.snap ) {
               object.set( 'x', object.get( 'x' ) + min.x );
             }

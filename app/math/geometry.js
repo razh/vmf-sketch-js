@@ -21,9 +21,44 @@ define(function() {
     return Math.sqrt( distanceSquared( x0, y0, x1, y1 ) );
   }
 
+  /**
+   * Linear interpolate from a to b by amount t.
+   */
+  function lerp( a, b, t ) {
+    return a + t * ( b - a );
+  }
+
+  function pointSegmentDistanceSquared( x, y, x0, y0, x1, y1 ) {
+    // Check if line is degenerate.
+    var lengthSquared = distanceSquared( x0, y0, x1, y1 );
+    if ( !lengthSquared ) {
+      return distanceSquared( x, y, x0, y0 );
+    }
+
+    // Determine the nearest parameter on the line segment to the point.
+    var t = ( ( x - x0 ) * ( x1 - x0 ) + ( y - y0 ) * ( y1 - y0 ) ) / lengthSquared;
+    if ( t < 0 ) {
+      return distanceSquared( x, y, x0, y0 );
+    }
+
+    if ( t > 1 ) {
+      return distanceSquared( x, y, x1, y1 );
+    }
+
+    return distanceSquared( x, y, lerp( x0, x1, t ), lerp( y0, y1, t ) );
+  }
+
+  function pointSegmentDistance( x, y, x0, y0, x1, y1 ) {
+    return Math.sqrt( pointSegmentDistanceSquared( x, y, x0, y0, x1, y1 ) );
+  }
+
   return {
     aabbContains: aabbContains,
+
     distanceSquared: distanceSquared,
-    distance: distance
+    distance:        distance,
+
+    pointSegmentDistanceSquared: pointSegmentDistanceSquared,
+    pointSegmentDistance:        pointSegmentDistance
   };
 });
