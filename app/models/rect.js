@@ -1,12 +1,11 @@
 define(
-  [ 'backbone', 'id', 'math/geometry' ],
-  function( Backbone, Id, Geometry ) {
+  [ 'backbone', 'math/geometry' ],
+  function( Backbone, Geometry ) {
     'use strict';
 
     var Rect = Backbone.Model.extend({
       defaults: function() {
         return {
-          id: Id.nextUid(),
           x: 0,
           y: 0,
           width: 0,

@@ -95,7 +95,7 @@ define(
 
             // Find the closest rectangle.
             level.each(function( rect ) {
-              if ( object.id === rect.id ) {
+              if ( object.cid === rect.cid ) {
                 return;
               }
 
