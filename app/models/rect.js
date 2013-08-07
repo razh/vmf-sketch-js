@@ -3,30 +3,35 @@ define(
   function( Backbone, Geometry ) {
     'use strict';
 
+    var Corner = {
+      TOP_LEFT:      9, // 1001
+      TOP_RIGHT:     3, // 0011
+      BOTTOM_LEFT:  12, // 1100
+      BOTTOM_RIGHT:  6, // 0110
+    };
+
+    var Edge = {
+      TOP:    1, // 0001
+      RIGHT:  2, // 0010
+      BOTTOM: 4, // 0100
+      LEFT:   8  // 1000
+    };
+
     var Rect = Backbone.Model.extend({
       defaults: function() {
         return {
           x: 0,
           y: 0,
           width: 0,
-          height: 0
+          height: 0,
+
+          resizeLength: 8
         };
       },
 
       initialize: function() {
         // Make sure we handle negative dimensions.
-        var width  = this.attributes.width,
-            height = this.attributes.height;
-
-        if ( width < 0 ) {
-          this.attributes.x += width;
-          this.attributes.width = -width;
-        }
-
-        if ( height < 0 ) {
-          this.attributes.y += height;
-          this.attributes.height = -height;
-        }
+        this.positiveDimensions();
       },
 
       /**
@@ -56,7 +61,7 @@ define(
             height = this.get( 'height' );
 
         // Draw resize handlers.
-        var length     = 6,
+        var length     = this.get( 'resizeLength' ),
             halfLength = 0.5 * length;
 
         ctx.beginPath();
@@ -99,44 +104,57 @@ define(
         return Geometry.aabbContains( x, y, aabb.x0, aabb.y0, aabb.x1, aabb.y1 );
       },
 
-      /**
-       * Determine if the point is close to a corner.
-       * Starting from bottom-right and going counterclockwise.
-       */
-      nearCorner: function( x, y, radius ) {
-        var aabb = this.aabb();
+      handler: function( x, y ) {
+        var rx = this.get( 'x' ),
+            ry = this.get( 'y' ),
+            width  = this.get( 'width' ),
+            height = this.get( 'height' );
 
-        var x0 = aabb.x0,
-            y0 = aabb.y0,
-            x1 = aabb.x1,
-            y1 = aabb.y1;
+        // Length of resize handler side.
+        var halfLength = 0.5 * this.get( 'resizeLength' );
 
-        // Distance (squared) to bottom right, and so on.
-        var bottomRight = Geometry.distanceSquared( x, y, x1, y1 ),
-            topRight    = Geometry.distanceSquared( x, y, x1, y0 ),
-            topLeft     = Geometry.distanceSquared( x, y, x0, y0 ),
-            bottomLeft  = Geometry.distanceSquared( x, y, x0, y1 );
+        var halfWidth  = 0.5 * width,
+            halfHeight = 0.5 * height;
 
-        var radiusSquared = radius * radius;
-      },
+        /**
+         * x0  x1   x2  x3   x4  x5
+         *  .__.     .__.     .__.
+         *  |  |-----|  |-----|  |
+         */
 
-      /**
-       * Determine if the point is close to an edge.
-       */
-      nearEdge: function( x, y, radius ) {
-        var aabb = this.aabb();
+        var x0 = rx - halfLength,
+            x1 = rx + halfLength,
+            x2 = rx + halfWidth - halfLength,
+            x3 = rx + halfWidth + halfLength,
+            x4 = rx + width - halfLength,
+            x5 = rx + width + halfLength;
 
-        var x0 = aabb.x0,
-            y0 = aabb.y0,
-            x1 = aabb.x1,
-            y1 = aabb.y1;
+        // Same order as above, but going from top to bottom.
+        var y0 = ry - halfLength,
+            y1 = ry + halfLength,
+            y2 = ry + halfHeight - halfLength,
+            y3 = ry + halfHeight + halfLength,
+            y4 = ry + height - halfLength,
+            y5 = ry + height + halfLength;
 
-        var top    = Geometry.pointSegmentDistanceSquared( x, y, x0, y0, x1, y0 ),
-            right  = Geometry.pointSegmentDistanceSquared( x, y, x1, y0, x1, y1 ),
-            bottom = Geometry.pointSegmentDistanceSquared( x, y, x1, y1, x0, y1 ),
-            left   = Geometry.pointSegmentDistanceSquared( x, y, x1, y1, x0, y1 );
+        var directions = [
+          { aabb: [ x0, y0, x1, y1 ], direction: Corner.TOP_LEFT     },
+          { aabb: [ x2, y0, x3, y1 ], direction: Edge.TOP            },
+          { aabb: [ x4, y0, x5, y1 ], direction: Corner.TOP_RIGHT    },
+          { aabb: [ x0, y2, x1, y3 ], direction: Edge.LEFT           },
+          { aabb: [ x4, y2, x5, y3 ], direction: Edge.RIGHT          },
+          { aabb: [ x0, y4, x1, y5 ], direction: Corner.BOTTOM_LEFT  },
+          { aabb: [ x2, y4, x3, y5 ], direction: Edge.BOTTOM         },
+          { aabb: [ x4, y4, x5, y5 ], direction: Corner.BOTTOM_RIGHT }
+        ];
 
-        var radiusSquared = radius * radius;
+        var d;
+        for ( var i = 0, l = directions.length; i < l; i++ ) {
+          d = directions[i];
+          if ( Geometry.aabbContains.apply( null, [ x, y ].concat( d.aabb ) ) ) {
+            return d.direction;
+          }
+        }
       },
 
       aabb: function() {
@@ -191,8 +209,64 @@ define(
           x: dx,
           y: dy
         };
+      },
+
+
+      /**
+       * Set left edge to x.
+       */
+      left: function( x ) {
+        var x0 = this.get( 'x' );
+        this.set( 'x', x );
+        this.set( 'width', this.get( 'width' ) + ( x0 - x ) );
+      },
+
+      /**
+       * Set right edge to x.
+       */
+      right: function( x ) {
+        var x0 = this.get( 'x' );
+        this.set( 'width', x - x0 );
+      },
+
+      /**
+       * Set top edge to y.
+       */
+      top: function( y ) {
+        var y0 = this.get( 'y' );
+        this.set( 'y', y );
+        this.set( 'height', this.get( 'height' ) + ( y0 - y ) );
+      },
+
+      /**
+       * Set bottom edge to y.
+       */
+      bottom: function( y ) {
+        var y0 = this.get( 'y' );
+        this.set( 'height', y - y0 );
+      },
+
+      /**
+       * Ensures that dimensions are positive.
+       */
+      positiveDimensions: function() {
+        var width  = this.attributes.width,
+            height = this.attributes.height;
+
+        if ( width < 0 ) {
+          this.attributes.x += width;
+          this.attributes.width = -width;
+        }
+
+        if ( height < 0 ) {
+          this.attributes.y += height;
+          this.attributes.height = -height;
+        }
       }
     });
+
+    Rect.Corner = Corner;
+    Rect.Edge   = Edge;
 
     return Rect;
   }

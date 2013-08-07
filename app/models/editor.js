@@ -1,8 +1,14 @@
 define(
-  [ 'backbone',
-    'models/editor-state' ],
-  function( Backbone, State ) {
+  [ 'backbone' ],
+  function( Backbone ) {
     'use strict';
+
+    var State = {
+      DEFAULT:   0,
+      DRAW:      1,
+      SELECT:    2,
+      TRANSFORM: 3
+    };
 
     /**
      * Container for drawables that are not part of the level.
@@ -18,6 +24,8 @@ define(
         };
       }
     });
+
+    Editor.State = State;
 
     return Editor;
   }

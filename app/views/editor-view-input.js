@@ -1,21 +1,43 @@
 define(
-  [ 'config',
-    'models/editor-state',
+  [ 'jquery',
+    'config',
+    'models/editor',
     'models/rect',
     'input/mouse' ],
-  function( Config, State, Rect, Mouse ) {
+  function( $, Config, Editor, Rect, Mouse ) {
     'use strict';
+
+    // Grab the states enum.
+    var State = Editor.State;
+
+    var Corner = Rect.Corner,
+        Edge   = Rect.Edge;
+
+    // Cursor CSS for each direction.
+    var cursors = [];
+
+    cursors[ Corner.TOP_LEFT     ] = 'nw-resize';
+    cursors[ Corner.TOP_RIGHT    ] = 'ne-resize';
+    cursors[ Corner.BOTTOM_LEFT  ] = 'sw-resize';
+    cursors[ Corner.BOTTOM_RIGHT ] = 'se-resize';
+
+    cursors[ Edge.TOP    ] = 'n-resize';
+    cursors[ Edge.RIGHT  ] = 'e-resize';
+    cursors[ Edge.BOTTOM ] = 's-resize';
+    cursors[ Edge.LEFT   ] = 'w-resize';
 
     /**
      * Input helper class for EditorView.
      */
     var EditorViewInput = function( element, editor, level ) {
-      var mouse = new Mouse();
+      var mouse    = new Mouse(),
+          $element = $( element );
 
       // Array of selected objects.
       var selected = [];
       // Offsets of selected objects.
       var offsets = [];
+
 
       /**
        * Calculate relative position of MouseEvent on element.
@@ -37,7 +59,43 @@ define(
         };
       }
 
+      // Resets the editor to the default state and clears selections.
+      function resetEditor() {
+        selected = [];
+        offsets = [];
+        editor.set( 'state', State.DEFAULT );
+      }
+
+      function selectFirst() {
+        if ( selected[0] ) {
+          selected = [ selected[0] ];
+          offsets = [ offsets[0] ];
+        }
+      }
+
+      function cursorDirection() {
+        if ( !selected[0] ) {
+          return;
+        }
+
+        // Check if we're on a corner or an edge.
+        mouse.direction = selected[0].handler( mouse.end.x, mouse.end.y );
+
+        if ( mouse.direction ) {
+          $element.css( 'cursor', cursors[ mouse.direction ] );
+        } else {
+          $element.css( 'cursor', 'default' );
+        }
+      }
+
       // Various LevelView input states.
+
+      /**
+       * DefaultState
+       * ============
+       *
+       *
+       */
       var DefaultState = {
         mousedown: function() {
           selected = level.hit( mouse.end.x, mouse.end.y );
@@ -80,7 +138,24 @@ define(
       };
 
       var SelectState = {
+        mousedown: function() {
+          if ( !mouse.direction ) {
+            var hit = level.hit( mouse.end.x, mouse.end.y );
+            if ( !hit.length ) {
+              resetEditor();
+            }
+          } else {
+            selectFirst();
+            editor.set( 'state', State.TRANSFORM );
+          }
+        },
+
         mousemove: function() {
+          if ( !mouse.down ) {
+            cursorDirection();
+            return;
+          }
+
           var min = {
             x: Number.POSITIVE_INFINITY,
             y: Number.POSITIVE_INFINITY
@@ -124,30 +199,58 @@ define(
         },
 
         mouseup: function() {
+          // We're only going to be transforming the very first object.
+          selectFirst();
           editor.set( 'state', State.TRANSFORM );
         }
       };
 
       var TransformState = {
         mousedown: function() {
-          // Check if we're on a corner or an edge.
+          if ( !mouse.direction ) {
+            var hit = level.hit( mouse.end.x, mouse.end.y );
+            // If nothing, start drawing.
+            if ( !hit.length ) {
+              resetEditor();
+              return;
+            }
 
-          var hit = level.hit( mouse.end.x, mouse.end.y );
-          // If nothing, start drawing.
-          if ( !hit.length ) {
-            selected = [];
-            offsets = [];
-
-            editor.set( 'state', State.DRAW );
-            return;
+            selected = hit;
+            offsets = selected.map( position );
+            editor.set( 'state', State.SELECT );
           }
-
-          selected = hit;
-          offsets = selected.map( position );
-          editor.set( 'state', State.SELECT );
         },
 
         mousemove: function() {
+          // If not mouse down, check direction.
+          if ( !mouse.down ) {
+            cursorDirection();
+          } else {
+            if ( mouse.direction & Edge.LEFT ) {
+              selected[0].left( mouse.end.x );
+            }
+
+            if ( mouse.direction & Edge.RIGHT ) {
+              selected[0].right( mouse.end.x );
+            }
+
+            if ( mouse.direction & Edge.TOP ) {
+              selected[0].top( mouse.end.y );
+            }
+
+            if ( mouse.direction & Edge.BOTTOM ) {
+              selected[0].bottom( mouse.end.y );
+            }
+          }
+        },
+
+        mouseup: function() {
+          // Make sure we still have positive dimensions.
+          selected[0].positiveDimensions();
+          offsets = [ position( selected[0] ) ];
+
+          $element.css( 'cursor', 'default' );
+          editor.set( 'state', State.SELECT );
         }
       };
 

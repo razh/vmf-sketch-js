@@ -2,10 +2,12 @@ define(
   [ 'underscore',
     'backbone',
     'config',
-    'models/editor-state',
+    'models/editor',
     'views/editor-view-input' ],
-  function( _, Backbone, Config, State, Input ) {
+  function( _, Backbone, Config, Editor, Input ) {
     'use strict';
+
+    var State = Editor.State;
 
     var EditorView = Backbone.View.extend({
       initialize: function() {
@@ -85,7 +87,7 @@ define(
 
         ctx.fillStyle = 'black';
         ctx.font = '20px Helvetica';
-        ctx.fillText( this.model.get( 'state' ), 20, 30 );
+        ctx.fillText( this.model.get( 'state' ) + ', ' + this.input.mouse.down, 20, 30 );
       }
     });
 

@@ -13,6 +13,7 @@ define(function() {
     };
 
     this.down = false;
+    this.direction = null;
   }
 
   return Mouse;
