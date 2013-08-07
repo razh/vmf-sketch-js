@@ -250,17 +250,19 @@ define(
        * Ensures that dimensions are positive.
        */
       positiveDimensions: function() {
-        var width  = this.attributes.width,
-            height = this.attributes.height;
+        var x = this.get( 'x' ),
+            y = this.get( 'y' ),
+            width  = this.get( 'width'  ),
+            height = this.get( 'height' );
 
         if ( width < 0 ) {
-          this.attributes.x += width;
-          this.attributes.width = -width;
+          this.set( 'x', x + width );
+          this.set( 'width', -width );
         }
 
         if ( height < 0 ) {
-          this.attributes.y += height;
-          this.attributes.height = -height;
+          this.set( 'y', y + height );
+          this.set( 'height', -height );
         }
       }
     });

@@ -69,11 +69,11 @@ define(
         });
 
         if ( this.model.get( 'state' ) === State.DRAW ) {
-          var mouse  = this.input.mouse,
-              rx     = mouse.start.x,
-              ry     = mouse.start.y,
-              rw     = mouse.end.x - rx,
-              rh     = mouse.end.y - ry;
+          var mouse = this.input.mouse,
+              rx    = mouse.start.x,
+              ry    = mouse.start.y,
+              rw    = mouse.end.x - rx,
+              rh    = mouse.end.y - ry;
 
           ctx.beginPath();
           ctx.rect( rx, ry, rw, rh );

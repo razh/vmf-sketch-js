@@ -21,8 +21,9 @@ define(
   [ 'models/editor',
     'models/rect',
     'collections/level',
-    'views/editor-view' ],
-  function( Editor, Rect, Level, EditorView ) {
+    'views/editor-view',
+    'views/rect-view' ],
+  function( Editor, Rect, Level, EditorView, RectView ) {
     'use strict';
 
     var rect0 = new Rect({
@@ -67,6 +68,11 @@ define(
 
     var editor = new Editor();
 
+    var rectView = new RectView({
+      el: '#rect-view',
+      model: rect0
+    });
+
     var editorView = new EditorView({
       el: '#editor-view',
       model: editor,
@@ -74,5 +80,6 @@ define(
     });
 
     editorView.render();
+    rectView.render();
   }
 );
