@@ -93,8 +93,9 @@ define(
       /**
        * DefaultState
        * ============
-       *
-       *
+       * mousedown:
+       *   -> SELECT: If there's a rect underneath the mousedown.
+       *   -> DRAW: If we've clicked on empty space.
        */
       var DefaultState = {
         mousedown: function() {
@@ -111,6 +112,13 @@ define(
         }
       };
 
+      /**
+       * DrawState
+       * =========
+       * mousemove: Draw a temporary rectangle.
+       * mouseup: Add the temporary rectangle to the level.
+       *   -> DEFAULT: On completion.
+       */
       var DrawState = {
         mousemove: function() {
           // Draw temporary rect so we can see what we're drawing.
@@ -137,6 +145,21 @@ define(
         }
       };
 
+      /**
+       * SelectState
+       * ===========
+       * mousedown: If we're not currently hovering a resize handler, check if
+       *   we're clicking empty space. If we are, empty the selection.
+       *   -> TRANSFORM: Only if the mouse is already hovering over a resize
+       *         handler. Only the first object in the selection is transformed.
+       *
+       * mousemove: If mouse is up, then check for a cursor direction update.
+       *   Otherwise, translate the selected objects by the amount the mouse
+       *   has moved. Snap if close to another rect.
+       *
+       * mouseup:
+       *   -> TRANSFORM: Only the first selected object.
+       */
       var SelectState = {
         mousedown: function() {
           if ( !mouse.direction ) {
@@ -164,6 +187,7 @@ define(
           var dx = mouse.end.x - mouse.start.x,
               dy = mouse.end.y - mouse.start.y;
 
+          // Translate each selected object by the distance moved.
           selected.forEach(function( object, index ) {
             object.set( 'x', offsets[ index ].x + dx );
             object.set( 'y', offsets[ index ].y + dy );
@@ -205,6 +229,20 @@ define(
         }
       };
 
+      /**
+       * TransformState
+       * ==============
+       * mousedown: If we're not hovering over a resize handler and we're NOT on
+       *   top of a shape, then empty the selection. Stay in TRANSFORM mode if
+       *   we are on a resize handler.
+       *   -> SELECT: If we are on top of a shape(s).
+       *
+       * mousemove: Update cursor direction if mouse is not down. If mouse is
+       *   down, then resize in the direction of the current resize handler.
+       *
+       * mouseup: Make sure the transformed shape has positive dimensions.
+       *   -> SELECT: On completion.
+       */
       var TransformState = {
         mousedown: function() {
           if ( !mouse.direction ) {
