@@ -1,6 +1,7 @@
 define(
-  [ 'backbone' ],
-  function( Backbone ) {
+  [ 'backbone',
+    'collections/selection' ],
+  function( Backbone, Selection ) {
     'use strict';
 
     var State = {
@@ -12,6 +13,8 @@ define(
 
     /**
      * Container for drawables that are not part of the level.
+     * This is all temporary data for a session. We use a model so we can detect
+     * changes in EditorView.
      */
     var Editor = Backbone.Model.extend({
       defaults: function() {
@@ -20,7 +23,8 @@ define(
           guides: {
             horz: [],
             vert: []
-          }
+          },
+          selection: new Selection()
         };
       }
     });

@@ -16,7 +16,7 @@ define(
         this.listenTo( this.collection, 'change add remove', this.render );
 
         // Setup controls.
-        this.input = new Input( this.el, this.model, this.collection );
+        this.input = new Input( this );
 
         this.$el.on({
           mousedown: this.input.mousedown,
@@ -64,7 +64,7 @@ define(
         });
 
         // Draw resize handlers on selected rects.
-        this.input.selected().forEach(function( object ) {
+        this.model.get( 'selection' ).each(function( object ) {
           object.drawResizeHandlers( ctx );
         });
 

@@ -29,12 +29,16 @@ define(
     /**
      * Input helper class for EditorView.
      */
-    var EditorViewInput = function( element, editor, level ) {
-      var mouse    = new Mouse(),
-          $element = $( element );
+    var EditorViewInput = function( editorView ) {
+      var mouse    = new Mouse();
+
+      var editor   = editorView.model,
+          level    = editorView.collection,
+          element  = editorView.el,
+          $element = editorView.$el;
 
       // Array of selected objects.
-      var selected = [];
+      var selection = editor.get( 'selection' );
       // Offsets of selected objects.
       var offsets = [];
 
@@ -59,27 +63,27 @@ define(
         };
       }
 
-      // Resets the editor to the default state and clears selections.
+      // Resets the editor to the default state and clears the selection.
       function resetEditor() {
-        selected = [];
+        selection.reset();
         offsets = [];
         editor.set( 'state', State.DEFAULT );
       }
 
       function selectFirst() {
-        if ( selected[0] ) {
-          selected = [ selected[0] ];
+        if ( selection.size() ) {
+          selection.reset( selection.at(0) );
           offsets = [ offsets[0] ];
         }
       }
 
       function cursorDirection() {
-        if ( !selected[0] ) {
+        if ( !selection.size() ) {
           return;
         }
 
         // Check if we're on a corner or an edge.
-        mouse.direction = selected[0].handler( mouse.end.x, mouse.end.y );
+        mouse.direction = selection.at(0).handler( mouse.end.x, mouse.end.y );
 
         if ( mouse.direction ) {
           $element.css( 'cursor', cursors[ mouse.direction ] );
@@ -99,12 +103,12 @@ define(
        */
       var DefaultState = {
         mousedown: function() {
-          selected = level.hit( mouse.end.x, mouse.end.y );
+          selection.reset( level.hit( mouse.end.x, mouse.end.y ) );
           // Grab the original (x, y) position of each object.
-          offsets = selected.map( position );
+          offsets = selection.map( position );
 
           // Enter select state only if we've selected something.
-          if ( selected.length ) {
+          if ( selection.size() ) {
             editor.set( 'state', State.SELECT );
           } else {
             editor.set( 'state', State.DRAW );
@@ -188,7 +192,7 @@ define(
               dy = mouse.end.y - mouse.start.y;
 
           // Translate each selected object by the distance moved.
-          selected.forEach(function( object, index ) {
+          selection.each(function( object, index ) {
             object.set( 'x', offsets[ index ].x + dx );
             object.set( 'y', offsets[ index ].y + dy );
 
@@ -253,8 +257,8 @@ define(
               return;
             }
 
-            selected = hit;
-            offsets = selected.map( position );
+            selection.reset( hit );
+            offsets = selection.map( position );
             editor.set( 'state', State.SELECT );
           }
         },
@@ -265,27 +269,27 @@ define(
             cursorDirection();
           } else {
             if ( mouse.direction & Edge.LEFT ) {
-              selected[0].left( mouse.end.x );
+              selection.at(0).left( mouse.end.x );
             }
 
             if ( mouse.direction & Edge.RIGHT ) {
-              selected[0].right( mouse.end.x );
+              selection.at(0).right( mouse.end.x );
             }
 
             if ( mouse.direction & Edge.TOP ) {
-              selected[0].top( mouse.end.y );
+              selection.at(0).top( mouse.end.y );
             }
 
             if ( mouse.direction & Edge.BOTTOM ) {
-              selected[0].bottom( mouse.end.y );
+              selection.at(0).bottom( mouse.end.y );
             }
           }
         },
 
         mouseup: function() {
           // Make sure we still have positive dimensions.
-          selected[0].positiveDimensions();
-          offsets = [ position( selected[0] ) ];
+          selection.at(0).positiveDimensions();
+          offsets = [ position( selection.at(0) ) ];
 
           $element.css( 'cursor', 'default' );
           editor.set( 'state', State.SELECT );
@@ -313,10 +317,6 @@ define(
       // Input handlers.
       return {
         mouse: mouse,
-
-        selected: function() {
-          return selected;
-        },
 
         mousedown: function( event ) {
           mouse.down = true;

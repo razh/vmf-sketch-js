@@ -22,8 +22,8 @@ define(
     'models/rect',
     'collections/level',
     'views/editor-view',
-    'views/rect-view' ],
-  function( Editor, Rect, Level, EditorView, RectView ) {
+    'views/selection-view' ],
+  function( Editor, Rect, Level, EditorView, SelectionView ) {
     'use strict';
 
     var rect0 = new Rect({
@@ -68,9 +68,9 @@ define(
 
     var editor = new Editor();
 
-    var rectView = new RectView({
-      el: '#rect-view',
-      model: rect0
+    var selectionView = new SelectionView({
+      el: '#selection-view',
+      collection: editor.get( 'selection' )
     });
 
     var editorView = new EditorView({
@@ -80,6 +80,6 @@ define(
     });
 
     editorView.render();
-    rectView.render();
+    selectionView.render();
   }
 );
