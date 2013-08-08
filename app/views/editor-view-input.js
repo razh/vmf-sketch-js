@@ -63,7 +63,9 @@ define(
         };
       }
 
-      // Resets the editor to the default state and clears the selection.
+      /**
+       * Resets the editor to the default state and clears the selection.
+       */
       function resetEditor() {
         selection.reset();
         offsets = [];
@@ -254,6 +256,7 @@ define(
             // If nothing, start drawing.
             if ( !hit.length ) {
               resetEditor();
+              editor.set( 'state', State.DRAW );
               return;
             }
 

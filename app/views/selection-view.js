@@ -14,22 +14,22 @@ define(
       },
 
       render: function() {
-        // Remove any preexisting RectView.
+        // Remove any pre-existing RectView.
         if ( this.rectView ) {
           // Don't redraw if same model.
           if ( this.rectView.model === this.collection.at(0) ) {
             return;
           }
 
-          this.rectView.undelegateEvents();
           this.rectView.remove();
+          this.rectView = null;
         }
 
         if ( this.collection.size() ) {
           this.$el.append( '<div id="rect-view"></div>' );
 
           this.rectView = new RectView({
-            el: this.$el.find( '#rect-view' )[0],
+            el: this.$( '#rect-view' )[0],
             model: this.collection.at(0)
           });
 

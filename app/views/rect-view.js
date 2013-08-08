@@ -27,7 +27,7 @@ define(
       update: function() {
         var changedAttributes = this.model.changedAttributes();
         for ( var attr in changedAttributes ) {
-          this.$el.find( '#' + attr ).val( changedAttributes[ attr ] );
+          this.$( '#' + attr ).val( changedAttributes[ attr ] );
         }
       },
 
