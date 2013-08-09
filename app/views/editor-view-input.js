@@ -39,9 +39,9 @@ define(
           $element = editorView.$el;
 
       // Array of selected objects.
-      var selection = editor.get( 'selection' );
+      var selection = editor.get( 'selection' ),
       // Offsets of selected objects.
-      var offsets = [];
+          offsets   = editor.get( 'offsets' );
 
       function pointDistanceToGridLine( x, y ) {
         var gridSpacing = Config.grid;
@@ -94,18 +94,17 @@ define(
       }
 
       /**
-       * Resets the editor to the default state and clears the selection.
+       * Set selection equal to array and updates the offsets.
        */
-      function resetEditor() {
-        selection.reset();
-        offsets = [];
-        editor.set( 'state', State.DEFAULT );
+      function select( array ) {
+        selection.reset( array );
+        // Grab the original (x, y) position of each object.
+        offsets = selection.map( position );
       }
 
       function selectFirst() {
         if ( selection.size() ) {
-          selection.reset( selection.at(0) );
-          offsets = [ offsets[0] ];
+          select( selection.at(0) );
         }
       }
 
@@ -129,15 +128,13 @@ define(
       /**
        * DefaultState
        * ============
-       * mousedown:
-       *   -> SELECT: If there's a rect underneath the mousedown.
+       * mousedown: Set selection to all objects at mouse position.
+       *   -> SELECT: If there's a rect at mouse position.
        *   -> DRAW: If we've clicked on empty space.
        */
       var DefaultState = {
         mousedown: function() {
-          selection.reset( level.hit( mouse.end.x, mouse.end.y ) );
-          // Grab the original (x, y) position of each object.
-          offsets = selection.map( position );
+          select( level.hit( mouse.end.x, mouse.end.y ) );
 
           // Enter select state only if we've selected something.
           if ( selection.size() ) {
@@ -191,10 +188,12 @@ define(
       /**
        * SelectState
        * ===========
-       * mousedown: If we're not currently hovering a resize handler, check if
-       *   we're clicking empty space. If we are, empty the selection.
+       * mousedown: If we're not currently hovering over a resize handler,
+       *   select all objects at mouse position.
+       *   -> DRAW: If the resulting selection is empty.
        *   -> TRANSFORM: Only if the mouse is already hovering over a resize
-       *         handler. Only the first object in the selection is transformed.
+       *         handler. Only the first object in the selection will be
+       *         transformed.
        *
        * mousemove: If mouse is up, then check for a cursor direction update.
        *   Otherwise, translate the selected objects by the amount the mouse
@@ -206,9 +205,9 @@ define(
       var SelectState = {
         mousedown: function() {
           if ( !mouse.direction ) {
-            var hit = level.hit( mouse.end.x, mouse.end.y );
-            if ( !hit.length ) {
-              resetEditor();
+            select( level.hit( mouse.end.x, mouse.end.y ) );
+            if ( !selection.size() ) {
+              editor.set( 'state', State.DRAW );
             }
           } else {
             selectFirst();
@@ -222,8 +221,6 @@ define(
             return;
           }
 
-          // Snap to nearest grid-line.
-
           var dx = mouse.end.x - mouse.start.x,
               dy = mouse.end.y - mouse.start.y;
 
@@ -235,6 +232,7 @@ define(
             // The minimum distance to snap to the nearest rect/grid-line.
             // Expressed in x and y components.
             if ( Config.snapping ) {
+              // Snap to nearest grid-line.
               var min = object.distanceToGridLine( Config.grid );
 
               // Find the closest rectangle.
@@ -279,10 +277,10 @@ define(
       /**
        * TransformState
        * ==============
-       * mousedown: If we're not hovering over a resize handler and we're NOT on
-       *   top of a shape, then empty the selection. Stay in TRANSFORM mode if
-       *   we are on a resize handler.
-       *   -> SELECT: If we are on top of a shape(s).
+       * mousedown: If we're not currently hovering over a resize handler,
+       *   select all objects at mouse position.
+       *   -> DRAW: If the resulting selection is empty.
+       *   -> SELECT: If the selection contains at least one shape.
        *
        * mousemove: Update cursor direction if mouse is not down. If mouse is
        *   down, then resize in the direction of the current resize handler.
@@ -293,17 +291,13 @@ define(
       var TransformState = {
         mousedown: function() {
           if ( !mouse.direction ) {
-            var hit = level.hit( mouse.end.x, mouse.end.y );
+            select( level.hit( mouse.end.x, mouse.end.y ) );
             // If nothing, start drawing.
-            if ( !hit.length ) {
-              resetEditor();
+            if ( !selection.size() ) {
               editor.set( 'state', State.DRAW );
-              return;
+            } else {
+              editor.set( 'state', State.SELECT );
             }
-
-            selection.reset( hit );
-            offsets = selection.map( position );
-            editor.set( 'state', State.SELECT );
           }
         },
 

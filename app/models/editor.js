@@ -24,7 +24,10 @@ define(
             horz: [],
             vert: []
           },
-          selection: new Selection()
+
+          // Selection and offset positions for each selected object.
+          selection: new Selection(),
+          offsets: []
         };
       }
     });
