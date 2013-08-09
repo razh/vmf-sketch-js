@@ -3,6 +3,7 @@ define(function() {
 
   return {
     grid: 32,
-    snap: 12
+    snap: 12,
+    snapping: true
   };
 });

@@ -1,10 +1,11 @@
 define(
   [ 'jquery',
     'config',
+    'math/geometry',
     'models/editor',
     'models/rect',
     'input/mouse' ],
-  function( $, Config, Editor, Rect, Mouse ) {
+  function( $, Config, Geometry, Editor, Rect, Mouse ) {
     'use strict';
 
     // Grab the states enum.
@@ -42,15 +43,33 @@ define(
       // Offsets of selected objects.
       var offsets = [];
 
-      function distanceToGridLine( x, y ) {
+      function pointDistanceToGridLine( x, y ) {
         var gridSpacing = Config.grid;
 
-        var dx = Math.round( x / gridSpacing ) * gridSpacing - x,
-            dy = Math.round( y / gridSpacing ) * gridSpacing - y;
+        return {
+          x: Geometry.distanceToGridLine( x, gridSpacing ),
+          y: Geometry.distanceToGridLine( y, gridSpacing )
+        };
+      }
+
+      /**
+       * Takes coordinates amd returns a point that is snapped to the grid,
+       * if within snapping radius.
+       */
+      function snapToGridLine( x, y ) {
+        var d = pointDistanceToGridLine( x, y );
+
+        if ( Math.abs( d.x ) < Config.snap ) {
+          x += d.x;
+        }
+
+        if ( Math.abs( d.y ) < Config.snap ) {
+          y += d.y;
+        }
 
         return {
-          x: dx,
-          y: dy
+          x: x,
+          y: y
         };
       }
 
@@ -124,6 +143,10 @@ define(
           if ( selection.size() ) {
             editor.set( 'state', State.SELECT );
           } else {
+            if ( Config.snapping ) {
+              mouse.start = snapToGridLine( mouse.start.x, mouse.start.y );
+            }
+
             editor.set( 'state', State.DRAW );
           }
         }
@@ -138,6 +161,9 @@ define(
        */
       var DrawState = {
         mousemove: function() {
+          if ( Config.snapping ) {
+            mouse.end = snapToGridLine( mouse.end.x, mouse.end.y );
+          }
           // Draw temporary rect so we can see what we're drawing.
           editor.trigger( 'change' );
         },
@@ -196,10 +222,7 @@ define(
             return;
           }
 
-          var min = {
-            x: Number.POSITIVE_INFINITY,
-            y: Number.POSITIVE_INFINITY
-          };
+          // Snap to nearest grid-line.
 
           var dx = mouse.end.x - mouse.start.x,
               dy = mouse.end.y - mouse.start.y;
@@ -209,30 +232,37 @@ define(
             object.set( 'x', offsets[ index ].x + dx );
             object.set( 'y', offsets[ index ].y + dy );
 
-            // Find the closest rectangle.
-            level.each(function( rect ) {
-              if ( object.cid === rect.cid ) {
-                return;
+            // The minimum distance to snap to the nearest rect/grid-line.
+            // Expressed in x and y components.
+            if ( Config.snapping ) {
+              var min = object.distanceToGridLine( Config.grid );
+
+              // Find the closest rectangle.
+              level.each(function( rect ) {
+                if ( object.cid === rect.cid ) {
+                  return;
+                }
+
+                var d = object.distanceTo( rect );
+
+                if ( Math.abs( d.x ) < Math.abs( min.x ) ) {
+                  min.x = d.x;
+                }
+
+                if ( Math.abs( d.y ) < Math.abs( min.y ) ) {
+                  min.y = d.y;
+                }
+              });
+
+              // If another rect/grid-line is within snapping distance,
+              // snap to nearest edge.
+              if ( Math.abs( min.x ) < Config.snap ) {
+                object.set( 'x', object.get( 'x' ) + min.x );
               }
 
-              var d = object.distanceTo( rect );
-
-              if ( Math.abs( d.x ) < Math.abs( min.x ) ) {
-                min.x = d.x;
+              if ( Math.abs( min.y ) < Config.snap ) {
+                object.set( 'y', object.get( 'y' ) + min.y );
               }
-
-              if ( Math.abs( d.y ) < Math.abs( min.y ) ) {
-                min.y = d.y;
-              }
-            });
-
-            // If another rect is within snapping distance, snap to nearest edge.
-            if ( Math.abs( min.x ) < Config.snap ) {
-              object.set( 'x', object.get( 'x' ) + min.x );
-            }
-
-            if ( Math.abs( min.y ) < Config.snap ) {
-              object.set( 'y', object.get( 'y' ) + min.y );
             }
           });
 
@@ -282,15 +312,8 @@ define(
           if ( !mouse.down ) {
             cursorDirection();
           } else {
-            // Snap to nearest grid line.
-            var d = distanceToGridLine( mouse.end.x, mouse.end.y );
-
-            if ( Math.abs( d.x ) < Config.snap ) {
-              mouse.end.x += d.x;
-            }
-
-            if ( Math.abs( d.y ) < Config.snap ) {
-              mouse.end.y += d.y;
+            if ( Config.snapping ) {
+              mouse.end = snapToGridLine( mouse.end.x, mouse.end.y );
             }
 
             // Transform along edge.

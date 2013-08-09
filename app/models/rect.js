@@ -1,5 +1,6 @@
 define(
-  [ 'backbone', 'math/geometry' ],
+  [ 'backbone',
+   'math/geometry' ],
   function( Backbone, Geometry ) {
     'use strict';
 
@@ -197,13 +198,29 @@ define(
             // Bottom edges.
             bottomBottom = aabb1.y1 - aabb0.y1;
 
-        var left   = Math.abs( leftRight ) < Math.abs( leftLeft     ) ? leftRight : leftLeft,
-            right  = Math.abs( rightLeft ) < Math.abs( rightRight   ) ? rightLeft : rightRight,
-            top    = Math.abs( topBottom ) < Math.abs( topTop       ) ? topBottom : topTop,
-            bottom = Math.abs( bottomTop ) < Math.abs( bottomBottom ) ? bottomTop : bottomBottom;
+        var dx = Geometry.minMagnitude( leftRight, leftLeft, rightLeft, rightRight ),
+            dy = Geometry.minMagnitude( topBottom, topTop, bottomTop, bottomBottom );
 
-        var dx = Math.abs( left ) < Math.abs( right  ) ? left : right,
-            dy = Math.abs( top  ) < Math.abs( bottom ) ? top  : bottom;
+        return {
+          x: dx,
+          y: dy
+        };
+      },
+
+      /**
+       * Distance from an edge to snap to the nearest grid-line, assuming the
+       * grid has lines which are spacing apart.
+       */
+      distanceToGridLine: function( spacing ) {
+        var aabb = this.aabb();
+
+        var left   = Geometry.distanceToGridLine( aabb.x0, spacing ),
+            right  = Geometry.distanceToGridLine( aabb.x1, spacing ),
+            top    = Geometry.distanceToGridLine( aabb.y0, spacing ),
+            bottom = Geometry.distanceToGridLine( aabb.y1, spacing );
+
+        var dx = Geometry.minMagnitude( left, right ),
+            dy = Geometry.minMagnitude( top, bottom );
 
         return {
           x: dx,
