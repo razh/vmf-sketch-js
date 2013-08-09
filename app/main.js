@@ -17,69 +17,68 @@ requirejs.config({
   }
 });
 
-define(
-  [ 'models/editor',
-    'models/rect',
-    'collections/level',
-    'views/editor-view',
-    'views/selection-view' ],
-  function( Editor, Rect, Level, EditorView, SelectionView ) {
-    'use strict';
+define([
+  'models/editor',
+  'models/rect',
+  'collections/level',
+  'views/editor-view',
+  'views/selection-view'
+], function( Editor, Rect, Level, EditorView, SelectionView ) {
+  'use strict';
 
-    var rect0 = new Rect({
-      x: 16,
-      y: 32,
-      width: 64,
-      height: 64
-    });
+  var rect0 = new Rect({
+    x: 16,
+    y: 32,
+    width: 64,
+    height: 64
+  });
 
-    console.log( rect0.toJSON() );
+  console.log( rect0.toJSON() );
 
-    var rect1 = new Rect({
-      x: 64,
-      y: 128,
-      width: 32,
-      height: 64
-    });
+  var rect1 = new Rect({
+    x: 64,
+    y: 128,
+    width: 32,
+    height: 64
+  });
 
-    console.log( rect1.toJSON() );
+  console.log( rect1.toJSON() );
 
-    var rect2 = new Rect({
-      x: 128,
-      y: 64,
-      width: 32,
-      height: 32
-    });
+  var rect2 = new Rect({
+    x: 128,
+    y: 64,
+    width: 32,
+    height: 32
+  });
 
-    console.log( rect2.toJSON() );
+  console.log( rect2.toJSON() );
 
-    var level = new Level();
+  var level = new Level();
 
-    level.add([
-      rect0,
-      rect1,
-      rect2
-    ]);
+  level.add([
+    rect0,
+    rect1,
+    rect2
+  ]);
 
-    var canvas = document.getElementById( 'editor-view' );
+  var canvas = document.getElementById( 'editor-view' );
 
-    canvas.width = 800;
-    canvas.height = 600;
+  canvas.width = 800;
+  canvas.height = 600;
 
-    var editor = new Editor();
+  var editor = new Editor();
 
-    var selectionView = new SelectionView({
-      el: '#selection-view',
-      collection: editor.get( 'selection' )
-    });
+  var selectionView = new SelectionView({
+    el: '#selection-view',
+    collection: editor.get( 'selection' )
+  });
 
-    var editorView = new EditorView({
-      el: '#editor-view',
-      model: editor,
-      collection: level
-    });
+  var editorView = new EditorView({
+    el: '#editor-view',
+    model: editor,
+    collection: level
+  });
 
-    editorView.render();
-    selectionView.render();
-  }
-);
+  editorView.render();
+  selectionView.render();
+});
