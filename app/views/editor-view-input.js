@@ -42,6 +42,17 @@ define(
       // Offsets of selected objects.
       var offsets = [];
 
+      function distanceToGridLine( x, y ) {
+        var gridSpacing = Config.grid;
+
+        var dx = Math.round( x / gridSpacing ) * gridSpacing - x,
+            dy = Math.round( y / gridSpacing ) * gridSpacing - y;
+
+        return {
+          x: dx,
+          y: dy
+        };
+      }
 
       /**
        * Calculate relative position of MouseEvent on element.
@@ -271,6 +282,18 @@ define(
           if ( !mouse.down ) {
             cursorDirection();
           } else {
+            // Snap to nearest grid line.
+            var d = distanceToGridLine( mouse.end.x, mouse.end.y );
+
+            if ( Math.abs( d.x ) < Config.snap ) {
+              mouse.end.x += d.x;
+            }
+
+            if ( Math.abs( d.y ) < Config.snap ) {
+              mouse.end.y += d.y;
+            }
+
+            // Transform along edge.
             if ( mouse.direction & Edge.LEFT ) {
               selection.at(0).left( mouse.end.x );
             }

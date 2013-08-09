@@ -211,7 +211,6 @@ define(
         };
       },
 
-
       /**
        * Set left edge to x.
        */
