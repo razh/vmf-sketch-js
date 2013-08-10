@@ -156,6 +156,8 @@ define([
           return d.direction;
         }
       }
+
+      return null;
     },
 
     aabb: function() {

@@ -264,7 +264,7 @@ define([
           }
         });
 
-        level.trigger( 'change' );
+        editor.trigger( 'change' );
       },
 
       mouseup: function() {
@@ -360,6 +360,7 @@ define([
     // Input handlers.
     return {
       mouse: mouse,
+      cursors: cursors,
 
       mousedown: function( event ) {
         mouse.down = true;
