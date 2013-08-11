@@ -11,10 +11,12 @@ files = [
   REQUIRE,
   REQUIRE_ADAPTER,
 
-  // include: false -> Load these files with RequireJS.
+  // included: false -> Load these files with RequireJS.
   {pattern: 'app/*.js', included: false},
   // Load all .js files not in components folder.
   {pattern: 'app/!(components)/*.js', included: false},
+  // Load templates.
+  {pattern: 'app/templates/*.html', included: false},
   // Load component dependencies.
   {pattern: 'app/components/backbone/backbone.js', included: false},
   {pattern: 'app/components/jquery/jquery.js', included: false},
@@ -29,7 +31,7 @@ files = [
 
 // list of files to exclude
 exclude = [
-  'app/main.js',
+  'app/main.js'
 ];
 
 

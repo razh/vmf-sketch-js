@@ -3,13 +3,9 @@ define(function( require ) {
 
   describe( 'Rect', function() {
 
-    var Rect;
+    var Rect = require( 'models/rect' );;
 
-    beforeEach(function() {
-      Rect = require( 'models/rect' );
-    });
-
-    it( 'should initialize correctly', function() {
+    it( 'initializes', function() {
       var rect = new Rect();
       rect.set( 'x', 100 );
       expect( rect.get( 'x' ) ).toBe( 100 );
@@ -27,7 +23,7 @@ define(function( require ) {
       expect( rect.get( 'height' ) ).toBe( 40 );
     });
 
-    it( 'should have corner and edge labels', function() {
+    it( 'has corner and edge labels', function() {
       var $ = require( 'jquery' ),
           Editor     = require( 'models/editor' ),
           EditorView = require( 'views/editor-view' ),
@@ -52,7 +48,7 @@ define(function( require ) {
       expect( cursors[ Rect.Edge.LEFT   ] ).toBe( 'w-resize' );
     });
 
-    it( 'should have hit detection', function() {
+    it( 'does hit detection', function() {
       var rect = new Rect({
         x: 20,
         y: 50,
@@ -68,7 +64,7 @@ define(function( require ) {
       expect( rect.contains( 0, 0 ) ).toBe( false );
     });
 
-    it( 'should return an axis-aligned bounding box', function() {
+    it( 'has an axis-aligned bounding box', function() {
       var rect = new Rect({
         x: 40,
         y: 100,
@@ -76,14 +72,15 @@ define(function( require ) {
         height: 32
       });
 
-      var aabb = rect.aabb();
-      expect( aabb.x0 ).toBe( 40 );
-      expect( aabb.y0 ).toBe( 100 );
-      expect( aabb.x1 ).toBe( 85 );
-      expect( aabb.y1 ).toBe( 132 );
+      expect( rect.aabb() ).toEqual({
+        x0: 40,
+        y0: 100,
+        x1: 85,
+        y1: 132
+      });
     });
 
-    it( 'should return the direction if hovering over a resize handler', function() {
+    it( 'returns the direction if hovering over a resize handler', function() {
       var rect = new Rect({
         x: 50,
         y: 60,

@@ -366,7 +366,9 @@ define([
         mouse.down = true;
 
         mouse.start = mousePosition( event );
-        mouse.end = mouse.start;
+        // Copy values.
+        mouse.end.x = mouse.start.x;
+        mouse.end.y = mouse.start.y;
 
         handleState( 'mousedown' );
       },
