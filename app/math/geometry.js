@@ -4,6 +4,13 @@ define([
   'use strict';
 
   /**
+   * Linear interpolate from a to b by amount t.
+   */
+  function lerp( a, b, t ) {
+    return a + t * ( b - a );
+  }
+
+  /**
    * Grab object coordinates.
    */
   function position( object ) {
@@ -31,13 +38,6 @@ define([
 
   function distance( x0, y0, x1, y1 ) {
     return Math.sqrt( distanceSquared( x0, y0, x1, y1 ) );
-  }
-
-  /**
-   * Linear interpolate from a to b by amount t.
-   */
-  function lerp( a, b, t ) {
-    return a + t * ( b - a );
   }
 
   function pointSegmentDistanceSquared( x, y, x0, y0, x1, y1 ) {
@@ -93,6 +93,7 @@ define([
   }
 
   return {
+    lerp:         lerp,
     position:     position,
     aabbContains: aabbContains,
 
