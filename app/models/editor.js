@@ -1,7 +1,8 @@
 define([
   'backbone',
-  'collections/selection'
-], function( Backbone, Selection ) {
+  'collections/selection',
+  'math/geometry'
+], function( Backbone, Selection, Geometry ) {
   'use strict';
 
   var State = {
@@ -27,8 +28,27 @@ define([
 
         // Selection and offset positions for each selected object.
         selection: new Selection(),
+        // Offsets of selected objects.
         offsets: []
       };
+    },
+
+    /**
+     * Set selection equal to array and updates the offsets.
+     */
+    select: function( array ) {
+      this.get( 'selection' ).reset( array );
+      // Grab the original (x, y) position of each object.
+      this.set( 'offsets', this.get( 'selection' ).map( Geometry.position ) );
+    },
+
+    /**
+     * Select first object in the selection.
+     */
+    selectFirst: function() {
+      if ( this.get( 'selection' ).size() ) {
+        this.select( this.get( 'selection' ).at(0) );
+      }
     }
   });
 

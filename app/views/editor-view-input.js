@@ -31,17 +31,16 @@ define([
    * Input helper class for EditorView.
    */
   var EditorViewInput = function( editorView ) {
-    var mouse    = new Mouse();
+    var mouse = new Mouse();
 
+    // Grab properties of the editorView.
     var editor   = editorView.model,
         level    = editorView.collection,
         element  = editorView.el,
         $element = editorView.$el;
 
-    // Array of selected objects.
-    var selection = editor.get( 'selection' ),
-    // Offsets of selected objects.
-        offsets   = editor.get( 'offsets' );
+    // Collection of selected objects.
+    var selection = editor.get( 'selection' );
 
     function pointDistanceToGridLine( x, y ) {
       var gridSpacing = Config.grid;
@@ -83,31 +82,6 @@ define([
       };
     }
 
-    /**
-     * Grab object coordinates.
-     */
-    function position( object ) {
-      return {
-        x: object.get( 'x' ),
-        y: object.get( 'y' )
-      };
-    }
-
-    /**
-     * Set selection equal to array and updates the offsets.
-     */
-    function select( array ) {
-      selection.reset( array );
-      // Grab the original (x, y) position of each object.
-      offsets = selection.map( position );
-    }
-
-    function selectFirst() {
-      if ( selection.size() ) {
-        select( selection.at(0) );
-      }
-    }
-
     function cursorDirection() {
       if ( !selection.size() ) {
         return;
@@ -134,7 +108,7 @@ define([
      */
     var DefaultState = {
       mousedown: function() {
-        select( level.hit( mouse.end.x, mouse.end.y ) );
+        editor.select( level.hit( mouse.end.x, mouse.end.y ) );
 
         // Enter select state only if we've selected something.
         if ( selection.size() ) {
@@ -205,12 +179,12 @@ define([
     var SelectState = {
       mousedown: function() {
         if ( !mouse.direction ) {
-          select( level.hit( mouse.end.x, mouse.end.y ) );
+          editor.select( level.hit( mouse.end.x, mouse.end.y ) );
           if ( !selection.size() ) {
             editor.set( 'state', State.DRAW );
           }
         } else {
-          selectFirst();
+          editor.selectFirst();
           editor.set( 'state', State.TRANSFORM );
         }
       },
@@ -223,6 +197,8 @@ define([
 
         var dx = mouse.end.x - mouse.start.x,
             dy = mouse.end.y - mouse.start.y;
+
+        var offsets = editor.get( 'offsets' );
 
         // Translate each selected object by the distance moved.
         selection.each(function( object, index ) {
@@ -269,7 +245,7 @@ define([
 
       mouseup: function() {
         // We're only going to be transforming the very first object.
-        selectFirst();
+        editor.selectFirst();
         editor.set( 'state', State.TRANSFORM );
       }
     };
@@ -291,7 +267,7 @@ define([
     var TransformState = {
       mousedown: function() {
         if ( !mouse.direction ) {
-          select( level.hit( mouse.end.x, mouse.end.y ) );
+          editor.select( level.hit( mouse.end.x, mouse.end.y ) );
           // If nothing, start drawing.
           if ( !selection.size() ) {
             editor.set( 'state', State.DRAW );
@@ -332,7 +308,7 @@ define([
       mouseup: function() {
         // Make sure we still have positive dimensions.
         selection.at(0).positiveDimensions();
-        offsets = [ position( selection.at(0) ) ];
+        editor.set( 'offsets', [ Geometry.position( selection.at(0) ) ] );
 
         $element.css( 'cursor', 'default' );
         editor.set( 'state', State.SELECT );

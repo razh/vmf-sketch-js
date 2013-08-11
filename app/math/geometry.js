@@ -4,6 +4,16 @@ define([
   'use strict';
 
   /**
+   * Grab object coordinates.
+   */
+  function position( object ) {
+    return {
+      x: object.get( 'x' ),
+      y: object.get( 'y' )
+    };
+  }
+
+  /**
    * Determine if the point (x, y) is in the axis-aligned bounding-box defined
    * by [(x0, y0), (x1, y1)].
    */
@@ -83,6 +93,7 @@ define([
   }
 
   return {
+    position:     position,
     aabbContains: aabbContains,
 
     distanceToGridLine: distanceToGridLine,
