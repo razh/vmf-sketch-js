@@ -52,14 +52,23 @@ define([
         ctx.lineTo( width, i * gridSpacing );
       }
 
-      ctx.lineWidth = 1;
-      ctx.strokeStyle = 'rgba(255, 0, 0, 0.25)';
+      ctx.lineWidth = Config.gridLineWidth;
+      ctx.strokeStyle = Config.gridStroke;
       ctx.stroke();
 
       // Draw objects.
+      ctx.beginPath();
+
       this.collection.each(function( object ) {
         object.draw( ctx );
       });
+
+      ctx.fillStyle = Config.fill;
+      ctx.fill();
+
+      ctx.lineWidth = Config.lineWidth;
+      ctx.strokeStyle = Config.stroke;
+      ctx.stroke();
 
       // Draw resize handlers on selected rects.
       var size = Config.resizeLength;
@@ -77,15 +86,16 @@ define([
         ctx.beginPath();
         ctx.rect( rx, ry, rw, rh );
 
-        ctx.fillStyle = 'rgba(255, 0, 0, 0.25)';
+        ctx.fillStyle = Config.drawFill;
         ctx.fill();
 
-        ctx.strokeStyle = 'black';
+        ctx.lineWidth = Config.drawLineWidth;
+        ctx.strokeStyle = Config.drawStroke;
         ctx.stroke();
       }
 
-      ctx.fillStyle = 'black';
-      ctx.font = '20px Helvetica';
+      ctx.fillStyle = Config.debugFill;
+      ctx.font = Config.debugFont;
       ctx.fillText( this.model.get( 'state' ) + ', ' + this.input.mouse.down, 20, 30 );
     }
   });

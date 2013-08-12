@@ -37,20 +37,12 @@ define([
      * You've got rendering code in my model!
      */
     draw: function( ctx ) {
-      ctx.beginPath();
-
       ctx.rect(
         this.get( 'x' ),
         this.get( 'y' ),
         this.get( 'width' ),
         this.get( 'height' )
       );
-
-      ctx.fillStyle = 'rgba(0, 0, 255, 0.25)';
-      ctx.fill();
-
-      ctx.strokeStyle = 'black';
-      ctx.stroke();
     },
 
     drawResizeHandlers: function( ctx, size ) {
