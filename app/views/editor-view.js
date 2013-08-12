@@ -62,8 +62,9 @@ define([
       });
 
       // Draw resize handlers on selected rects.
+      var size = Config.resizeLength;
       this.model.get( 'selection' ).each(function( object ) {
-        object.drawResizeHandlers( ctx );
+        object.drawResizeHandlers( ctx, size );
       });
 
       if ( this.model.get( 'state' ) === State.DRAW ) {

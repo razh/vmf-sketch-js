@@ -88,7 +88,7 @@ define([
       }
 
       // Check if we're on a corner or an edge.
-      mouse.direction = selection.at(0).handler( mouse.end.x, mouse.end.y );
+      mouse.direction = selection.at(0).handler( mouse.end.x, mouse.end.y, Config.resizeLength );
 
       if ( mouse.direction ) {
         $element.css( 'cursor', cursors[ mouse.direction ] );

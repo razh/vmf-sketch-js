@@ -24,9 +24,7 @@ define([
         x: 0,
         y: 0,
         width: 0,
-        height: 0,
-
-        resizeLength: 8
+        height: 0
       };
     },
 
@@ -55,30 +53,30 @@ define([
       ctx.stroke();
     },
 
-    drawResizeHandlers: function( ctx ) {
+    drawResizeHandlers: function( ctx, size ) {
       var x = this.get( 'x' ),
           y = this.get( 'y' ),
           width  = this.get( 'width' ),
           height = this.get( 'height' );
 
-      // Draw resize handlers.
-      var length     = this.get( 'resizeLength' ),
-          halfLength = 0.5 * length;
+      // Resize handler dimension.
+      size = size || 1;
+      var halfSize = 0.5 * size;
 
       ctx.beginPath();
 
       // Corners.
       // Top lefts of resize handler rects.
-      var x0 = x - halfLength,
-          y0 = y - halfLength,
-          x1 = x + width  - halfLength,
-          y1 = y + height - halfLength;
+      var x0 = x - halfSize,
+          y0 = y - halfSize,
+          x1 = x + width  - halfSize,
+          y1 = y + height - halfSize;
 
       // Starting from top-left corner and going clockwise.
-      ctx.rect( x0, y0, length, length );
-      ctx.rect( x0, y1, length, length );
-      ctx.rect( x1, y0, length, length );
-      ctx.rect( x1, y1, length, length );
+      ctx.rect( x0, y0, size, size );
+      ctx.rect( x0, y1, size, size );
+      ctx.rect( x1, y0, size, size );
+      ctx.rect( x1, y1, size, size );
 
       // Edges.
       var halfWidth  = 0.5 * width,
@@ -88,10 +86,10 @@ define([
           my = y0 + halfHeight;
 
       // Starting from left edge and going clockwise.
-      ctx.rect( x0, my, length, length );
-      ctx.rect( mx, y0, length, length );
-      ctx.rect( x1, my, length, length );
-      ctx.rect( mx, y1, length, length );
+      ctx.rect( x0, my, size, size );
+      ctx.rect( mx, y0, size, size );
+      ctx.rect( x1, my, size, size );
+      ctx.rect( mx, y1, size, size );
 
       ctx.fillStyle = 'white';
       ctx.fill();
@@ -105,14 +103,15 @@ define([
       return Geometry.aabbContains( x, y, aabb.x0, aabb.y0, aabb.x1, aabb.y1 );
     },
 
-    handler: function( x, y ) {
+    handler: function( x, y, size ) {
       var rx = this.get( 'x' ),
           ry = this.get( 'y' ),
           width  = this.get( 'width' ),
           height = this.get( 'height' );
 
-      // Length of resize handler side.
-      var halfLength = 0.5 * this.get( 'resizeLength' );
+      // Size of resize handler side.
+      size = size || 1;
+      var halfSize = 0.5 * size;
 
       var halfWidth  = 0.5 * width,
           halfHeight = 0.5 * height;
@@ -123,20 +122,20 @@ define([
        *  |  |-----|  |-----|  |
        */
 
-      var x0 = rx - halfLength,
-          x1 = rx + halfLength,
-          x2 = rx + halfWidth - halfLength,
-          x3 = rx + halfWidth + halfLength,
-          x4 = rx + width - halfLength,
-          x5 = rx + width + halfLength;
+      var x0 = rx - halfSize,
+          x1 = rx + halfSize,
+          x2 = rx + halfWidth - halfSize,
+          x3 = rx + halfWidth + halfSize,
+          x4 = rx + width - halfSize,
+          x5 = rx + width + halfSize;
 
       // Same order as above, but going from top to bottom.
-      var y0 = ry - halfLength,
-          y1 = ry + halfLength,
-          y2 = ry + halfHeight - halfLength,
-          y3 = ry + halfHeight + halfLength,
-          y4 = ry + height - halfLength,
-          y5 = ry + height + halfLength;
+      var y0 = ry - halfSize,
+          y1 = ry + halfSize,
+          y2 = ry + halfHeight - halfSize,
+          y3 = ry + halfHeight + halfSize,
+          y4 = ry + height - halfSize,
+          y5 = ry + height + halfSize;
 
       var directions = [
         { aabb: [ x0, y0, x1, y1 ], direction: Corner.TOP_LEFT     },
