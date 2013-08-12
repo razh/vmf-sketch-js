@@ -1,8 +1,9 @@
 define([
   'backbone',
   'collections/selection',
-  'math/geometry'
-], function( Backbone, Selection, Geometry ) {
+  'math/geometry',
+  'models/editor-history'
+], function( Backbone, Selection, Geometry, EditorHistory ) {
   'use strict';
 
   var State = {
@@ -29,7 +30,9 @@ define([
         // Selection and offset positions for each selected object.
         selection: new Selection(),
         // Offsets of selected objects.
-        offsets: []
+        offsets: [],
+
+        history: new EditorHistory()
       };
     },
 
