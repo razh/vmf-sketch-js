@@ -4,6 +4,8 @@ define([
   'use strict';
 
   function EditorHistory() {
+    this.current = null;
+
     this.undoStack = [];
     this.redoStack = [];
   }
@@ -14,7 +16,11 @@ define([
      * Wipes the redo stack.
      */
     save: function( object ) {
-      this.undoStack.push( new Memento( object ) );
+      if ( this.current ) {
+        this.undoStack.push( this.current );
+      }
+
+      this.current = new Memento( object );
       this.redoStack = [];
     },
 
@@ -23,15 +29,12 @@ define([
         return;
       }
 
-      // If the redo stack is empty, we are at the current state.
-      // Push the current state to the redo stack.
-      if ( !this.redoStack.length ) {
-        this.redoStack.push( this.undoStack.pop() );
+      if ( this.current ) {
+        this.redoStack.push( this.current );
       }
 
-      var memento = this.undoStack.pop();
-      memento.restore();
-      this.redoStack.push( memento );
+      this.current = this.undoStack.pop();
+      this.current.restore();
     },
 
     redo: function() {
@@ -39,15 +42,12 @@ define([
         return;
       }
 
-      // Similarily, if the undo stack is empty, we somewhere to start off from.
-      // So push the most recent undone state to the undo stack.
-      if ( !this.undoStack.length ) {
-        this.undoStack.push( this.redoStack.pop() );
+      if ( this.current ) {
+        this.undoStack.push( this.current );
       }
 
-      var memento = this.redoStack.pop();
-      memento.restore();
-      this.undoStack.push( memento );
+      this.current = this.redoStack.pop();
+      this.current.restore();
     },
 
     clear: function() {
