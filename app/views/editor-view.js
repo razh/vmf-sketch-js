@@ -1,10 +1,11 @@
 define([
+  'jquery',
   'underscore',
   'backbone',
   'config',
   'models/editor',
   'views/editor-view-input'
-], function( _, Backbone, Config, Editor, Input ) {
+], function( $, _, Backbone, Config, Editor, Input ) {
   'use strict';
 
   var State = Editor.State;
@@ -24,15 +25,17 @@ define([
         mouseup: this.input.mouseup
       });
 
+      $( document ).on({
+        keydown: this.input.keydown
+      });
+
       this.ctx = this.el.getContext( '2d' );
     },
 
-    render: function() {
+    renderGrid: function() {
       var ctx    = this.ctx,
           width  = ctx.canvas.width,
           height = ctx.canvas.height;
-
-      ctx.clearRect( 0, 0, width, height );
 
       // Draw gridlines.
       var gridSpacing = Config.grid,
@@ -55,8 +58,11 @@ define([
       ctx.lineWidth = Config.gridLineWidth;
       ctx.strokeStyle = Config.gridStroke;
       ctx.stroke();
+    },
 
-      // Draw objects.
+    renderObjects: function() {
+      var ctx = this.ctx;
+
       ctx.beginPath();
 
       this.collection.each(function( object ) {
@@ -69,6 +75,15 @@ define([
       ctx.lineWidth = Config.lineWidth;
       ctx.strokeStyle = Config.stroke;
       ctx.stroke();
+    },
+
+    render: function() {
+      var ctx = this.ctx;
+
+      ctx.clearRect( 0, 0, ctx.canvas.width, ctx.canvas.height );
+
+      this.renderGrid();
+      this.renderObjects();
 
       // Draw resize handlers on selected rects.
       var size = Config.resizeLength;

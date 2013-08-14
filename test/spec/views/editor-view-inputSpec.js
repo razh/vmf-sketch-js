@@ -255,5 +255,46 @@ define(function( require ) {
       expect( firstRect.get( 'height' ) ).toBe( dHeight );
     });
 
+    describe( 'Key commands', function() {
+
+      it( 'calls undo() on key combination given by Config', function() {
+        var history = editor.get( 'history' );
+        spyOn( history, 'undo' );
+        spyOn( history, 'redo' );
+
+        var undoCommand = Config.commands.undo;
+
+        // Make sure undefineds are given values.
+        editorView.input.keydown({
+          which:    undoCommand.which || 0,
+          ctrlKey:  undoCommand.ctrl  || false,
+          shiftKey: undoCommand.shift || false,
+          altKey:   undoCommand.alt   || false
+        });
+
+        expect( history.undo ).toHaveBeenCalled();
+        expect( history.redo ).not.toHaveBeenCalled();
+      });
+
+      // Same thing as above, but for redo().
+      it( 'calls redo() on key combination given by Config', function() {
+        var history = editor.get( 'history' );
+        spyOn( history, 'undo' );
+        spyOn( history, 'redo' );
+
+        var redoCommand = Config.commands.redo;
+
+        editorView.input.keydown({
+          which:    redoCommand.which || 0,
+          ctrlKey:  redoCommand.ctrl  || false,
+          shiftKey: redoCommand.shift || false,
+          altKey:   redoCommand.alt   || false
+        });
+
+        expect( history.undo ).not.toHaveBeenCalled();
+        expect( history.redo ).toHaveBeenCalled();
+      });
+    });
+
   });
 });

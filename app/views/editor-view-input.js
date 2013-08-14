@@ -97,6 +97,40 @@ define([
       }
     }
 
+    /**
+     * Returns if the event matches the key combination for the command?
+     *
+     * Example command structure: {
+     *   which: 65, // A.
+     *   ctrl: true,
+     *   shift: false,
+     *   alt: true
+     * };
+     *
+     * This refers to CTRL+ALT+A. Note that ctrl, shift, and alt keys are
+     * optional.
+     */
+    function keyCommand( event, command ) {
+      // Handle single-key commands.
+      if ( typeof command === 'number' ) {
+        return command === event.which;
+      }
+
+      if ( typeof command === 'object' ) {
+        // Set undefined values to false.
+        command.ctrl  = typeof command.ctrl  === 'undefined' ? false : command.ctrl;
+        command.shift = typeof command.shift === 'undefined' ? false : command.shift;
+        command.alt   = typeof command.alt   === 'undefined' ? false : command.alt;
+
+        // Exit if the current KeyEvent does not correspond to the command defintion.
+        if ( command.ctrl  !== event.ctrlKey  ) { return false; }
+        if ( command.shift !== event.shiftKey ) { return false; }
+        if ( command.alt   !== event.altKey   ) { return false; }
+
+        return command.which === event.which;
+      }
+    }
+
     // Various LevelView input states.
 
     /**
@@ -365,6 +399,16 @@ define([
 
         mouse.end.x = Number.NaN;
         mouse.end.y = Number.NaN;
+      },
+
+      keydown: function( event ) {
+        if ( keyCommand( event, Config.commands.undo ) ) {
+          editor.get( 'history' ).undo();
+        }
+
+        if ( keyCommand( event, Config.commands.redo ) ) {
+          editor.get( 'history' ).redo();
+        }
       }
     };
   };

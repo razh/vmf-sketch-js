@@ -23,6 +23,20 @@ define(function() {
     gridLineWidth: 1,
 
     debugFont: '20px Helvetica',
-    debugFill: 'black'
+    debugFill: 'black',
+
+    commands: {
+      undo: {
+        which: 90, // Z.
+        ctrl: true,
+        shift: false
+      },
+
+      redo: {
+        which: 90, // Z.
+        ctrl: true,
+        shift: true
+      }
+    }
   };
 });
