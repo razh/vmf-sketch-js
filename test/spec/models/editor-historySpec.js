@@ -129,10 +129,26 @@ define(function( require ) {
         ]);
       });
 
+      it( 'restoring a Backbone.Collection from a memento does not change cids', function() {
+        var test = new Rect({ id: 'sidisjd' });
+        expect( test.id ).toBe( 'sidisjd' );
+
+        var cid0 = level.at(0).cid;
+        expect( level.get(cid0) ).toBe(level.at(0));
+
+        level.set( level.toJSON() );
+        expect( level.at(0).cid ).toBe( cid0 );
+
+        var memento = new Mememto( level );
+        expect( memento.state[0].cid ).toBe( cid0 );
+        memento.restore();
+        expect( level.at(0).cid ).toBe( cid0 );
+      });
+
       it( 'saves the state of a Level (Backbone.Collection of Rects)', function() {
-        var id0 = level.at(0).id,
-            id1 = level.at(1).id,
-            id2 = level.at(2).id;
+        var cid0 = level.at(0).cid,
+            cid1 = level.at(1).cid,
+            cid2 = level.at(2).cid;
 
         expect( level.length ).toBe(4);
         history.save( level );
@@ -142,17 +158,17 @@ define(function( require ) {
         history.save( level );
 
         history.undo();
-        // Check if ids are the same.
-        expect( level.at(0).id ).toBe( id0 );
-        expect( level.at(1).id ).toBe( id1 );
+        // Check if cids are the same.
+        expect( level.at(0).cid ).toBe( cid0 );
+        expect( level.at(1).cid ).toBe( cid1 );
         // Check if values are the same.
         expect( level.at(0).get('x') ).toBe( 10 );
         expect( level.at(1).get('x') ).toBe( 20 );
         expect( level.length ).toBe(4);
 
         history.redo();
-        expect( level.at(0).id ).toBe( id1 );
-        expect( level.at(1).id ).toBe( id2 );
+        expect( level.at(0).cid ).toBe( cid1 );
+        expect( level.at(1).cid ).toBe( cid2 );
         expect( level.at(0).get('x') ).toBe( 20 );
         expect( level.at(1).get('x') ).toBe( 30 );
         expect( level.length ).toBe(3);
@@ -209,9 +225,9 @@ define(function( require ) {
         // Three rects, the first two overlap.
         // Use (35, 50) as the intersection point.
         level = new Level([
-          new Rect({ x: 20, y: 20, width: 30, height: 40 }),
-          new Rect({ x: 30, y: 45, width: 20, height: 50 }),
-          new Rect({ x: 200, y: 300, width: 50, height: 90 })
+          { x: 20, y: 20, width: 30, height: 40 },
+          { x: 30, y: 45, width: 20, height: 50 },
+          { x: 200, y: 300, width: 50, height: 90 }
         ]);
 
         editor = new Editor({

@@ -26,8 +26,8 @@ define(function( require ) {
       // Two rectangles of width: 50 and height: 70.
       // Spaced 30 apart.
       level = new Level([
-        new Rect({ x: 30, y: 30, width: 50, height: 70 }),
-        new Rect({ x: 110, y: 30, width: 50, height: 70 })
+        { x: 30, y: 30, width: 50, height: 70 },
+        { x: 110, y: 30, width: 50, height: 70 }
       ]);
 
       editor = new Editor();

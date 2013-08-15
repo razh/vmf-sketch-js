@@ -226,8 +226,10 @@ define([
      */
     left: function( x ) {
       var x0 = this.get( 'x' );
-      this.set( 'x', x );
-      this.set( 'width', this.get( 'width' ) + ( x0 - x ) );
+      this.set({
+        x: x,
+        width: this.get( 'width' ) + ( x0 - x )
+      });
     },
 
     /**
@@ -243,8 +245,10 @@ define([
      */
     top: function( y ) {
       var y0 = this.get( 'y' );
-      this.set( 'y', y );
-      this.set( 'height', this.get( 'height' ) + ( y0 - y ) );
+      this.set({
+        y: y,
+        height: this.get( 'height' ) + ( y0 - y )
+      });
     },
 
     /**
@@ -265,14 +269,28 @@ define([
           height = this.get( 'height' );
 
       if ( width < 0 ) {
-        this.set( 'x', x + width );
-        this.set( 'width', -width );
+        this.set({
+          x: x + width,
+          width: -width
+        });
       }
 
       if ( height < 0 ) {
-        this.set( 'y', y + height );
-        this.set( 'height', -height );
+        this.set({
+          y: y + height,
+          height: -height
+        });
       }
+    },
+
+    /**
+     * Adding the cid allows us to maintain "references" to Rects even after
+     * they've been removed from the level.
+     */
+    toJSON: function() {
+      var jsonObject = Backbone.Model.prototype.toJSON.call( this );
+      jsonObject.cid = this.cid;
+      return jsonObject;
     }
   });
 

@@ -3,14 +3,14 @@ define([
 ], function( Backbone ) {
   'use strict';
 
-  function Memento( object ) {
-    this.object = object || null;
-    this.state  = this.object.toJSON();
+  function Memento( target ) {
+    this.target = target || null;
+    this.state  = this.target.toJSON();
   }
 
   Memento.prototype = {
     restore: function() {
-      this.object.set( this.state );
+      this.target.set( this.state );
     }
   };
 

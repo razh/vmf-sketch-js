@@ -1,7 +1,8 @@
 define([
   'underscore',
+  'backbone',
   'models/memento'
-], function( _, Memento ) {
+], function( _, Backbone, Memento ) {
   'use strict';
 
   function EditorHistory() {
@@ -13,20 +14,20 @@ define([
 
   EditorHistory.prototype = {
     /**
-     * Save an object's attributes.
+     * Save the target's attributes.
      * Wipes the redo stack.
      */
-    save: function( object ) {
+    save: function( target ) {
       if ( this.current ) {
         this.undoStack.push( this.current );
       }
 
-      if ( _.isArray( object ) ) {
-        this.current = object.map(function( element ) {
+      if ( _.isArray( target ) ) {
+        this.current = target.map(function( element ) {
           return new Memento( element );
         });
       } else {
-        this.current = new Memento( object );
+        this.current = new Memento( target );
       }
 
       this.redoStack = [];
@@ -54,6 +55,11 @@ define([
         });
       } else {
         this.current.restore();
+
+        // Restore model references in mementos.
+        if ( this.current.target instanceof Backbone.Collection ) {
+          this.reference( this.current.target );
+        }
       }
 
       return this;
@@ -65,6 +71,29 @@ define([
     clear: function() {
       this.undoStack = [];
       this.redoStack = [];
+    },
+
+    /**
+     * Goes through the undo and redo stacks and rebuilds references to models.
+     */
+    reference: function( collection ) {
+      this.undoStack.concat( this.redoStack ).forEach(function( state ) {
+        var mementos = _.isArray( state ) ? state : [ state ];
+
+        mementos.forEach(function( memento ) {
+          if ( memento.target instanceof Backbone.Collection ) {
+            return;
+          }
+
+          // console.log( 'cid: ' + memento.state.cid)
+          var newModel = collection.get( memento.state.cid );
+          if ( !newModel ) {
+            return;
+          }
+
+          memento.target = newModel;
+        });
+      });
     }
   };
 
