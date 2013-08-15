@@ -10,11 +10,7 @@ define([
 
   Memento.prototype = {
     restore: function() {
-      if ( this.object instanceof Backbone.Model ) {
-        this.object.set( this.state );
-      } else if ( this.object instanceof Backbone.Collection ) {
-        this.object.reset( this.state );
-      }
+      this.object.set( this.state );
     }
   };
 

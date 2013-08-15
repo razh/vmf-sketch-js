@@ -24,8 +24,9 @@ define(function( require ) {
     });
 
     it( 'has corner and edge labels', function() {
-      var $ = require( 'jquery' ),
-          Editor     = require( 'models/editor' ),
+      var $ = require( 'jquery' )
+
+      var Editor     = require( 'models/editor' ),
           EditorView = require( 'views/editor-view' ),
           Level      = require( 'collections/level' );
 

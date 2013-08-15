@@ -52,6 +52,10 @@ define([
       if ( this.get( 'selection' ).size() ) {
         this.select( this.get( 'selection' ).at(0) );
       }
+    },
+
+    clearSelection: function() {
+      this.select( [] );
     }
   });
 

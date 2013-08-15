@@ -130,6 +130,10 @@ define(function( require ) {
       });
 
       it( 'saves the state of a Level (Backbone.Collection of Rects)', function() {
+        var id0 = level.at(0).id,
+            id1 = level.at(1).id,
+            id2 = level.at(2).id;
+
         expect( level.length ).toBe(4);
         history.save( level );
 
@@ -138,10 +142,109 @@ define(function( require ) {
         history.save( level );
 
         history.undo();
+        // Check if ids are the same.
+        expect( level.at(0).id ).toBe( id0 );
+        expect( level.at(1).id ).toBe( id1 );
+        // Check if values are the same.
+        expect( level.at(0).get('x') ).toBe( 10 );
+        expect( level.at(1).get('x') ).toBe( 20 );
         expect( level.length ).toBe(4);
 
         history.redo();
+        expect( level.at(0).id ).toBe( id1 );
+        expect( level.at(1).id ).toBe( id2 );
+        expect( level.at(0).get('x') ).toBe( 20 );
+        expect( level.at(1).get('x') ).toBe( 30 );
         expect( level.length ).toBe(3);
+      });
+
+      it( 'mementos maintain references to models after collection addition/removal', function() {
+        history.save( level.at(0) );
+        level.at(0).set( 'x', 200 );
+        history.save( level.at(0) );
+
+        history.save( level );
+        level.remove( level.at(0) );
+        history.save( level );
+
+        history.undo();
+        expect( level.length ).toBe(4);
+
+        history.undo();
+        expect( level.at(0).get( 'x' ) ).toBe( 200 );
+        history.undo();
+        expect( level.at(0).get( 'x' ) ).toBe( 10 );
+      });
+
+      it( 'allows the batch-saving of multiple models at once', function() {
+        expect( level.at(0).get( 'x' ) ).toBe( 10 );
+        // Attempt to save an array.
+        history.save( level.models );
+
+        level.at(0).set( 'x', 200 );
+        level.at(1).set( 'x', 210 );
+        history.save( level.models );
+
+        history.undo();
+        expect( level.at(0).get( 'x' ) ).toBe( 10 );
+        expect( level.at(1).get( 'x' ) ).toBe( 20 );
+
+        history.redo();
+        expect( level.at(0).get( 'x' ) ).toBe( 200 );
+        expect( level.at(1).get( 'x' ) ).toBe( 210 );
+      });
+    });
+
+    describe( 'Canvas interaction', function() {
+
+      var Editor     = require( 'models/editor' ),
+          EditorView = require( 'views/editor-view' );
+
+      var $canvas, canvas, level, editor, editorView;
+
+      beforeEach(function() {
+        $canvas = $( '<canvas></canvas>');
+        canvas  = $canvas[0];
+
+        // Three rects, the first two overlap.
+        // Use (35, 50) as the intersection point.
+        level = new Level([
+          new Rect({ x: 20, y: 20, width: 30, height: 40 }),
+          new Rect({ x: 30, y: 45, width: 20, height: 50 }),
+          new Rect({ x: 200, y: 300, width: 50, height: 90 })
+        ]);
+
+        editor = new Editor({
+          history: history
+        });
+
+        editorView = new EditorView({
+          el: canvas,
+          model: editor,
+          collection: level
+        });
+      });
+
+      it( 'moving a Rect causes a save state', function() {
+        var dx = -10,
+            dy = -5;
+
+        // Select the first rectangle.
+        editorView.input.mousedown({
+          pageX: 25,
+          pageY: 30
+        });
+
+        expect( editor.get( 'selection' ).at(0) ).toBe( level.at(0) );
+
+        editorView.input.mousemove({
+          pageX: 25 + dx,
+          pageY: 30 + dy
+        });
+
+        editorView.input.mouseup();
+
+        // expect( history.undoStack.length ).toBe(1);
       });
     });
 

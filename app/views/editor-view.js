@@ -14,7 +14,7 @@ define([
     initialize: function() {
       _.bindAll( this, 'render' );
       this.listenTo( this.model, 'change', this.render );
-      this.listenTo( this.collection, 'change add remove', this.render );
+      this.listenTo( this.collection, 'change add remove reset', this.render );
 
       // Setup controls.
       this.input = new Input( this );
@@ -109,9 +109,15 @@ define([
         ctx.stroke();
       }
 
+      var debug = this.model.get( 'state' ) + ', ' +
+                  this.input.mouse.down + ', ' + '[ ' +
+                  this.model.get( 'history' ).undoStack.length + ', ' +
+                  this.model.get( 'history' ).redoStack.length + ' ]';
+
+
       ctx.fillStyle = Config.debugFill;
       ctx.font = Config.debugFont;
-      ctx.fillText( this.model.get( 'state' ) + ', ' + this.input.mouse.down, 20, 30 );
+      ctx.fillText( debug, 20, 30 );
     }
   });
 

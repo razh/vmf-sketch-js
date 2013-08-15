@@ -48,211 +48,209 @@ define(function( require ) {
       expect( editor.get( 'state' ) ).toBe( State.DEFAULT );
     });
 
-    /**
-     * Draw state.
-     */
-    it( 'transitions to the draw state when clicking on empty space', function() {
-      // Mouse down on empty spot.
-      editorView.input.mousedown({
-        pageX: 10,
-        pageY: 20
+    describe( 'Draw state', function() {
+      it( 'transitions to the draw state when clicking on empty space', function() {
+        // Mouse down on empty spot.
+        editorView.input.mousedown({
+          pageX: 10,
+          pageY: 20
+        });
+
+        expect( editorView.input.mouse.down ).toBe(true);
+        expect( editorView.input.mouse.start ).toEqual({
+          x: 10,
+          y: 20
+        });
+        expect( editorView.input.mouse.end ).toEqual({
+          x: 10,
+          y: 20
+        });
+
+        expect( editor.get( 'state' ) ).toBe( State.DRAW );
       });
 
-      expect( editorView.input.mouse.down ).toBe(true);
-      expect( editorView.input.mouse.start ).toEqual({
-        x: 10,
-        y: 20
-      });
-      expect( editorView.input.mouse.end ).toEqual({
-        x: 10,
-        y: 20
-      });
+      it( 'draws a new rect and adds it to the level', function() {
+        // Enter draw state.
+        editorView.input.mousedown({
+          pageX: 10,
+          pageY: 20
+        });
 
-      expect( editor.get( 'state' ) ).toBe( State.DRAW );
-    });
+        expect( editor.get( 'state' ) ).toBe( State.DRAW );
 
-    it( 'draws a new rect and adds it to the level', function() {
-      // Enter draw state.
-      editorView.input.mousedown({
-        pageX: 10,
-        pageY: 20
-      });
+        editorView.input.mousemove({
+          pageX: 30,
+          pageY: 40
+        });
 
-      expect( editor.get( 'state' ) ).toBe( State.DRAW );
+        editorView.input.mouseup();
 
-      editorView.input.mousemove({
-        pageX: 30,
-        pageY: 40
-      });
+        expect( editor.get( 'state' ) ).toBe( State.DEFAULT );
 
-      editorView.input.mouseup();
-
-      expect( editor.get( 'state' ) ).toBe( State.DEFAULT );
-
-      expect( level.size() ).toBe(3);
-      expect( level.at(2).get( 'x' ) ).toBe( 10 );
-      expect( level.at(2).get( 'y' ) ).toBe( 20 );
-      expect( level.at(2).get( 'width' ) ).toBe( 20 );
-      expect( level.at(2).get( 'height' ) ).toBe( 20 );
-    });
-
-    /**
-     * Select state.
-     */
-    it( 'transitions to the select state when clicking on a rect', function() {
-      editorView.input.mousedown({
-        pageX: 40,
-        pageY: 40
-      });
-
-      expect( editor.get( 'state' ) ).toBe( State.SELECT );
-      expect( editor.get( 'selection' ).at(0) ).toEqual( level.at(0) );
-      expect( editor.get( 'offsets' )[0] ).toEqual({
-        x: 30,
-        y: 30
+        expect( level.size() ).toBe(3);
+        expect( level.at(2).get( 'x' ) ).toBe( 10 );
+        expect( level.at(2).get( 'y' ) ).toBe( 20 );
+        expect( level.at(2).get( 'width' ) ).toBe( 20 );
+        expect( level.at(2).get( 'height' ) ).toBe( 20 );
       });
     });
 
-    it( 'translates the rect on mousemove while in select state', function() {
-      editorView.input.mousedown({
-        pageX: 40,
-        pageY: 40
+    describe( 'Select state', function() {
+      it( 'transitions to the select state when clicking on a rect', function() {
+        editorView.input.mousedown({
+          pageX: 40,
+          pageY: 40
+        });
+
+        expect( editor.get( 'state' ) ).toBe( State.SELECT );
+        expect( editor.get( 'selection' ).at(0) ).toEqual( level.at(0) );
+        expect( editor.get( 'offsets' )[0] ).toEqual({
+          x: 30,
+          y: 30
+        });
       });
 
-      editorView.input.mousemove({
-        pageX: 50,
-        pageY: 20
-      });
+      it( 'translates the rect on mousemove while in select state', function() {
+        editorView.input.mousedown({
+          pageX: 40,
+          pageY: 40
+        });
 
-      var selectedRect = editor.get( 'selection' ).at(0);
-      expect( selectedRect.get( 'x' ) ).toBe( 40 );
-      expect( selectedRect.get( 'y' ) ).toBe( 10 );
-      expect( selectedRect.get( 'width' ) ).toBe( 50 );
-      expect( selectedRect.get( 'height' ) ).toBe( 70 );
+        editorView.input.mousemove({
+          pageX: 50,
+          pageY: 20
+        });
+
+        var selectedRect = editor.get( 'selection' ).at(0);
+        expect( selectedRect.get( 'x' ) ).toBe( 40 );
+        expect( selectedRect.get( 'y' ) ).toBe( 10 );
+        expect( selectedRect.get( 'width' ) ).toBe( 50 );
+        expect( selectedRect.get( 'height' ) ).toBe( 70 );
+      });
     });
 
-    /**
-     * Transform state.
-     */
-    it( 'transitions to transform state on mouseup from select state', function() {
-      editor.select( level.at(0) );
-      editor.set( 'state', State.SELECT );
-      editorView.input.mouseup();
 
-      expect( editor.get( 'state' ) ).toBe( State.TRANSFORM );
-      expect( editor.get( 'selection' ).at(0) ).toEqual( level.at(0) );
+    describe( 'Transform state', function() {
+      it( 'transitions to transform state on mouseup from select state', function() {
+        editor.select( level.at(0) );
+        editor.set( 'state', State.SELECT );
+        editorView.input.mouseup();
 
-      // Only one object in selection noew.
-      expect( editor.get( 'selection' ).size() ).toBe(1);
-    });
+        expect( editor.get( 'state' ) ).toBe( State.TRANSFORM );
+        expect( editor.get( 'selection' ).at(0) ).toEqual( level.at(0) );
 
-    it( 'transforms along top-left corner while in transform state', function() {
-      var firstRect = level.at(0);
-
-      var x = firstRect.get( 'x' ),
-          y = firstRect.get( 'y' ),
-          width = firstRect.get( 'width' ),
-          height = firstRect.get( 'height' );
-
-      editor.select( firstRect );
-      editor.set( 'state', State.TRANSFORM );
-
-      // Click on the top left corner.
-      editorView.input.mouse.direction = Rect.Corner.TOP_LEFT;
-      editorView.input.mousedown({
-        pageX: x,
-        pageY: y
+        // Only one object in selection noew.
+        expect( editor.get( 'selection' ).size() ).toBe(1);
       });
 
-      var dx = 20,
-          dy = 30;
+      it( 'transforms along top-left corner while in transform state', function() {
+        var firstRect = level.at(0);
 
-      editorView.input.mousemove({
-        pageX: x + dx,
-        pageY: y + dy
+        var x = firstRect.get( 'x' ),
+            y = firstRect.get( 'y' ),
+            width = firstRect.get( 'width' ),
+            height = firstRect.get( 'height' );
+
+        editor.select( firstRect );
+        editor.set( 'state', State.TRANSFORM );
+
+        // Click on the top left corner.
+        editorView.input.mouse.direction = Rect.Corner.TOP_LEFT;
+        editorView.input.mousedown({
+          pageX: x,
+          pageY: y
+        });
+
+        var dx = 20,
+            dy = 30;
+
+        editorView.input.mousemove({
+          pageX: x + dx,
+          pageY: y + dy
+        });
+
+        editorView.input.mouseup();
+
+        expect( firstRect.get( 'x' ) ).toBe( x + dx );
+        expect( firstRect.get( 'y' ) ).toBe( y + dy );
+        expect( firstRect.get( 'width' ) ).toBe( width - dx );
+        expect( firstRect.get( 'height' ) ).toBe( height - dy );
       });
 
-      editorView.input.mouseup();
+      it( 'transforms along bottom-right corner while in transform state', function() {
+        var firstRect = level.at(0);
 
-      expect( firstRect.get( 'x' ) ).toBe( x + dx );
-      expect( firstRect.get( 'y' ) ).toBe( y + dy );
-      expect( firstRect.get( 'width' ) ).toBe( width - dx );
-      expect( firstRect.get( 'height' ) ).toBe( height - dy );
-    });
+        var x = firstRect.get( 'x' ),
+            y = firstRect.get( 'y' ),
+            width = firstRect.get( 'width' ),
+            height = firstRect.get( 'height' );
 
-    it( 'transforms along bottom-right corner while in transform state', function() {
-      var firstRect = level.at(0);
+        editor.select( firstRect );
+        editor.set( 'state', State.TRANSFORM );
 
-      var x = firstRect.get( 'x' ),
-          y = firstRect.get( 'y' ),
-          width = firstRect.get( 'width' ),
-          height = firstRect.get( 'height' );
+        editorView.input.mouse.direction = Rect.Corner.BOTTOM_RIGHT;
+        editorView.input.mousedown({
+          pageX: x + width,
+          pageY: y + height
+        });
 
-      editor.select( firstRect );
-      editor.set( 'state', State.TRANSFORM );
+        var dx = 10,
+            dy = -20;
 
-      editorView.input.mouse.direction = Rect.Corner.BOTTOM_RIGHT;
-      editorView.input.mousedown({
-        pageX: x + width,
-        pageY: y + height
+        editorView.input.mousemove({
+          pageX: x + width + dx,
+          pageY: y + height + dy
+        });
+
+        editorView.input.mouseup();
+
+        expect( firstRect.get( 'x' ) ).toBe( x );
+        expect( firstRect.get( 'y' ) ).toBe( y );
+        expect( firstRect.get( 'width' ) ).toBe( width + dx );
+        expect( firstRect.get( 'height' ) ).toBe( height + dy );
       });
 
-      var dx = 10,
-          dy = -20;
+      it( 'maintains positive dimensions when a negative transformation is applied', function() {
+        var firstRect = level.at(0);
 
-      editorView.input.mousemove({
-        pageX: x + width + dx,
-        pageY: y + height + dy
+        var x = firstRect.get( 'x' ),
+            y = firstRect.get( 'y' ),
+            width = firstRect.get( 'width' ),
+            height = firstRect.get( 'height' );
+
+        editor.select( firstRect );
+        editor.set( 'state', State.TRANSFORM );
+
+        editorView.input.mouse.direction = Rect.Corner.BOTTOM_RIGHT;
+        editorView.input.mousedown({
+          pageX: x + width,
+          pageY: y + height
+        });
+
+        var dWidth = 20,
+            dHeight = 30;
+
+        var dx = -width - dWidth,
+            dy = -height - dHeight;
+
+        editorView.input.mousemove({
+          pageX: x + width + dx,
+          pageY: y + height + dy
+        });
+
+        expect( firstRect.get( 'x' ) ).toBe( x );
+        expect( firstRect.get( 'y' ) ).toBe( y );
+        expect( firstRect.get( 'width' ) ).toBe( -dWidth );
+        expect( firstRect.get( 'height' ) ).toBe( -dHeight );
+
+        // This calls .positiveDimensions().
+        editorView.input.mouseup();
+
+        expect( firstRect.get( 'x' ) ).toBe( x - dWidth );
+        expect( firstRect.get( 'y' ) ).toBe( y - dHeight );
+        expect( firstRect.get( 'width' ) ).toBe( dWidth );
+        expect( firstRect.get( 'height' ) ).toBe( dHeight );
       });
-
-      editorView.input.mouseup();
-
-      expect( firstRect.get( 'x' ) ).toBe( x );
-      expect( firstRect.get( 'y' ) ).toBe( y );
-      expect( firstRect.get( 'width' ) ).toBe( width + dx );
-      expect( firstRect.get( 'height' ) ).toBe( height + dy );
-    });
-
-    it( 'maintains positive dimensions when a negative transformation is applied', function() {
-      var firstRect = level.at(0);
-
-      var x = firstRect.get( 'x' ),
-          y = firstRect.get( 'y' ),
-          width = firstRect.get( 'width' ),
-          height = firstRect.get( 'height' );
-
-      editor.select( firstRect );
-      editor.set( 'state', State.TRANSFORM );
-
-      editorView.input.mouse.direction = Rect.Corner.BOTTOM_RIGHT;
-      editorView.input.mousedown({
-        pageX: x + width,
-        pageY: y + height
-      });
-
-      var dWidth = 20,
-          dHeight = 30;
-
-      var dx = -width - dWidth,
-          dy = -height - dHeight;
-
-      editorView.input.mousemove({
-        pageX: x + width + dx,
-        pageY: y + height + dy
-      });
-
-      expect( firstRect.get( 'x' ) ).toBe( x );
-      expect( firstRect.get( 'y' ) ).toBe( y );
-      expect( firstRect.get( 'width' ) ).toBe( -dWidth );
-      expect( firstRect.get( 'height' ) ).toBe( -dHeight );
-
-      // This calls .positiveDimensions().
-      editorView.input.mouseup();
-
-      expect( firstRect.get( 'x' ) ).toBe( x - dWidth );
-      expect( firstRect.get( 'y' ) ).toBe( y - dHeight );
-      expect( firstRect.get( 'width' ) ).toBe( dWidth );
-      expect( firstRect.get( 'height' ) ).toBe( dHeight );
     });
 
     describe( 'Key commands', function() {

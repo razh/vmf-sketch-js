@@ -40,7 +40,8 @@ define([
         $element = editorView.$el;
 
     // Collection of selected objects.
-    var selection = editor.get( 'selection' );
+    var selection = editor.get( 'selection' ),
+        history   = editor.get( 'history' );
 
     function pointDistanceToGridLine( x, y ) {
       var gridSpacing = Config.grid;
@@ -152,6 +153,7 @@ define([
             mouse.start = snapToGridLine( mouse.start.x, mouse.start.y );
           }
 
+          history.save( level );
           editor.set( 'state', State.DRAW );
         }
       }
@@ -189,6 +191,7 @@ define([
           }));
         }
 
+        history.save( level );
         editor.set( 'state', State.DEFAULT );
       }
     };
@@ -236,8 +239,10 @@ define([
 
         // Translate each selected object by the distance moved.
         selection.each(function( object, index ) {
-          object.set( 'x', offsets[ index ].x + dx );
-          object.set( 'y', offsets[ index ].y + dy );
+          object.set({
+            x: offsets[ index ].x + dx,
+            y: offsets[ index ].y + dy
+          });
 
           // The minimum distance to snap to the nearest rect/grid-line.
           // Expressed in x and y components.
@@ -278,6 +283,7 @@ define([
       },
 
       mouseup: function() {
+        history.save( selection.models );
         // We're only going to be transforming the very first object.
         editor.selectFirst();
         editor.set( 'state', State.TRANSFORM );
@@ -343,6 +349,7 @@ define([
         // Make sure we still have positive dimensions.
         selection.at(0).positiveDimensions();
         editor.set( 'offsets', [ Geometry.position( selection.at(0) ) ] );
+        history.save( selection.at(0) );
 
         $element.css( 'cursor', 'default' );
         editor.set( 'state', State.SELECT );
@@ -403,10 +410,12 @@ define([
 
       keydown: function( event ) {
         if ( keyCommand( event, Config.commands.undo ) ) {
+          editor.clearSelection();
           editor.get( 'history' ).undo();
         }
 
         if ( keyCommand( event, Config.commands.redo ) ) {
+          editor.clearSelection();
           editor.get( 'history' ).redo();
         }
       }
