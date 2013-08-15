@@ -130,11 +130,11 @@ define(function( require ) {
       });
 
       it( 'restoring a Backbone.Collection from a memento does not change cids', function() {
-        var test = new Rect({ id: 'sidisjd' });
-        expect( test.id ).toBe( 'sidisjd' );
+        var test = new Rect({ cid: 'test' });
+        expect( test.cid ).toBe( 'test' );
 
         var cid0 = level.at(0).cid;
-        expect( level.get(cid0) ).toBe(level.at(0));
+        expect( level.get( cid0 ) ).toBe(level.at(0));
 
         level.set( level.toJSON() );
         expect( level.at(0).cid ).toBe( cid0 );

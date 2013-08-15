@@ -81,17 +81,7 @@ define([
         var mementos = _.isArray( state ) ? state : [ state ];
 
         mementos.forEach(function( memento ) {
-          if ( memento.target instanceof Backbone.Collection ) {
-            return;
-          }
-
-          // console.log( 'cid: ' + memento.state.cid)
-          var newModel = collection.get( memento.state.cid );
-          if ( !newModel ) {
-            return;
-          }
-
-          memento.target = newModel;
+          memento.reference( collection );
         });
       });
     }
