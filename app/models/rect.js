@@ -45,6 +45,13 @@ define([
         this.get( 'width' ),
         this.get( 'height' )
       );
+
+      ctx.fillStyle = 'black';
+      ctx.fillText(
+        this.get( 'x' ) + ', ' + this.get( 'y' ) + ', ' + this.get( 'width' ) + ', ' + this.get( 'height' ),
+        this.get( 'x' ) + 10,
+        this.get( 'y' ) + 20
+      );
     },
 
     drawResizeHandlers: function( ctx, size ) {

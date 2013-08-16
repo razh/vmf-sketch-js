@@ -5,7 +5,7 @@ define([
 
   function Memento( target ) {
     this.target = target || null;
-    this.state  = this.target.toJSON();
+    this.state  = target ? this.target.toJSON() : {};
   }
 
   Memento.prototype = {

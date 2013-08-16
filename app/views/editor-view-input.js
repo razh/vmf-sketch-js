@@ -148,6 +148,7 @@ define([
         // Enter select state only if we've selected something.
         if ( selection.size() ) {
           editor.set( 'state', State.SELECT );
+          history.save( selection.models );
         } else {
           if ( Config.snapping ) {
             mouse.start = snapToGridLine( mouse.start.x, mouse.start.y );
@@ -314,6 +315,8 @@ define([
           } else {
             editor.set( 'state', State.SELECT );
           }
+        } else {
+
         }
       },
 

@@ -285,8 +285,21 @@ define(function( require ) {
         });
 
         editorView.input.mouseup();
+      });
 
-        // expect( history.undoStack.length ).toBe(1);
+      it( 'no new states are created if a transformation is an identity', function() {
+        spyOn( history, 'save' );
+
+        editor.set( 'state', State.TRANSFORM );
+
+        editorView.input.mousedown({
+          pageX: 25,
+          pageY: 20
+        });
+
+        editorView.input.mousemove({
+
+        })
       });
     });
 

@@ -10,8 +10,16 @@ define([
 
     this.undoStack = [];
     this.redoStack = [];
+
+    this.previousState = null;
   }
 
+  /**
+   * There are three types of history states:
+   * - A Backbone.Model.
+   * - A Backbone.Collection.
+   * - An array of Backbone.Models.
+   */
   EditorHistory.prototype = {
     /**
      * Save the target's attributes.
@@ -31,6 +39,14 @@ define([
       }
 
       this.redoStack = [];
+    },
+
+    begin: function( target ) {
+
+    },
+
+    end: function() {
+
     },
 
     /**
