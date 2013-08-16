@@ -14,14 +14,14 @@ define([
     },
 
     /**
-     * Makes sure that our target references the one in collection.
+     * Makes sure that our target references the same object in collection.
      */
     reference: function( collection ) {
       if ( this.target instanceof Backbone.Collection ) {
         return;
       }
 
-      var target = collection.get( this.state.cid );
+      var target = collection.get( this.state.id );
       if ( !target ) {
         return;
       }

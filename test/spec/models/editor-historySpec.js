@@ -129,52 +129,78 @@ define(function( require ) {
         ]);
       });
 
-      it( 'restoring a Backbone.Collection from a memento does not change cids', function() {
-        var test = new Rect({ cid: 'test' });
-        expect( test.cid ).toBe( 'test' );
+      it( 'restoring a Backbone.Collection from a memento may change level order', function() {
+        var rect0JSON = level.at(0).toJSON();
 
-        var cid0 = level.at(0).cid;
-        expect( level.get( cid0 ) ).toBe(level.at(0));
+        var id0 = level.at(0).id,
+            id1 = level.at(1).id,
+            id2 = level.at(2).id,
+            id3 = level.at(3).id;
 
-        level.set( level.toJSON() );
-        expect( level.at(0).cid ).toBe( cid0 );
+        expect( level.at(0).id ).toBe( id0 );
+        expect( level.get( id0 ) ).toBe( level.at(0) );
+        expect( level.pluck( 'id' ) ).toEqual( [ id0, id1, id2, id3 ] );
 
         var memento = new Mememto( level );
-        expect( memento.state[0].cid ).toBe( cid0 );
+        level.remove( level.at(0) );
         memento.restore();
-        expect( level.at(0).cid ).toBe( cid0 );
+        expect( level.pluck( 'id' ) ).toEqual( [ id1, id2, id3, id0 ] );
+        expect( level.get( id0 ).toJSON() ).toEqual( rect0JSON );
+      });
+
+      it( 'restoring a Backbone.Collection from a memento does not change ids', function() {
+        var test = new Rect({ id: 'test' });
+        expect( test.id ).toBe( 'test' );
+
+        var id0 = level.at(0).id;
+        expect( level.get( id0 ) ).toBe(level.at(0));
+
+        level.set( level.toJSON() );
+        expect( level.at(0).id ).toBe( id0 );
+
+        var memento = new Mememto( level );
+        expect( memento.state[0].id ).toBe( id0 );
+        memento.restore();
+        expect( level.at(0).id ).toBe( id0 );
       });
 
       it( 'saves the state of a Level (Backbone.Collection of Rects)', function() {
-        var cid0 = level.at(0).cid,
-            cid1 = level.at(1).cid,
-            cid2 = level.at(2).cid;
+        var rect0 = level.at(0),
+            rect1 = level.at(1),
+            rect2 = level.at(2);
+
+        var id0 = rect0.id,
+            id1 = rect1.id,
+            id2 = rect2.id;
 
         expect( level.length ).toBe(4);
         history.save( level );
 
         level.remove( level.at(0) );
         expect( level.length ).toBe(3);
+        // It no longer exists in the array.
+        expect( typeof level.get( id0 ) ).toBe( 'undefined' );
         history.save( level );
 
         history.undo();
-        // Check if cids are the same.
-        expect( level.at(0).cid ).toBe( cid0 );
-        expect( level.at(1).cid ).toBe( cid1 );
+        // Check if ids are the same.
+        expect( level.get( id0 ).id ).toBe( id0 );
+        expect( level.get( id1 ).id ).toBe( id1 );
         // Check if values are the same.
-        expect( level.at(0).get('x') ).toBe( 10 );
-        expect( level.at(1).get('x') ).toBe( 20 );
+        expect( level.get( id0 ).get( 'x' ) ).toBe( 10 );
+        expect( level.get( id1 ).get( 'x' ) ).toBe( 20 );
         expect( level.length ).toBe(4);
 
         history.redo();
-        expect( level.at(0).cid ).toBe( cid1 );
-        expect( level.at(1).cid ).toBe( cid2 );
-        expect( level.at(0).get('x') ).toBe( 20 );
-        expect( level.at(1).get('x') ).toBe( 30 );
+        expect( level.at(0).id ).toBe( id1 );
+        expect( level.at(1).id ).toBe( id2 );
+        expect( level.at(0).get( 'x' ) ).toBe( 20 );
+        expect( level.at(1).get( 'x' ) ).toBe( 30 );
         expect( level.length ).toBe(3);
       });
 
       it( 'mementos maintain references to models after collection addition/removal', function() {
+        var id0 = level.at(0).id;
         history.save( level.at(0) );
         level.at(0).set( 'x', 200 );
         history.save( level.at(0) );
@@ -187,9 +213,9 @@ define(function( require ) {
         expect( level.length ).toBe(4);
 
         history.undo();
-        expect( level.at(0).get( 'x' ) ).toBe( 200 );
+        expect( level.get( id0 ).get( 'x' ) ).toBe( 200 );
         history.undo();
-        expect( level.at(0).get( 'x' ) ).toBe( 10 );
+        expect( level.get( id0 ).get( 'x' ) ).toBe( 10 );
       });
 
       it( 'allows the batch-saving of multiple models at once', function() {

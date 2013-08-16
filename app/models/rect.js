@@ -1,7 +1,8 @@
 define([
+  'underscore',
   'backbone',
   'math/geometry'
-], function( Backbone, Geometry ) {
+], function( _, Backbone, Geometry ) {
   'use strict';
 
   var Corner = {
@@ -21,6 +22,7 @@ define([
   var Rect = Backbone.Model.extend({
     defaults: function() {
       return {
+        id: _.uniqueId(),
         x: 0,
         y: 0,
         width: 0,
@@ -281,16 +283,6 @@ define([
           height: -height
         });
       }
-    },
-
-    /**
-     * Adding the cid allows us to maintain "references" to Rects even after
-     * they've been removed from the level.
-     */
-    toJSON: function() {
-      var jsonObject = Backbone.Model.prototype.toJSON.call( this );
-      jsonObject.cid = this.cid;
-      return jsonObject;
     }
   });
 
