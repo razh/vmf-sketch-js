@@ -242,6 +242,8 @@ define(function( require ) {
       var Editor     = require( 'models/editor' ),
           EditorView = require( 'views/editor-view' );
 
+      var State = Editor.State;
+
       var $canvas, canvas, level, editor, editorView;
 
       beforeEach(function() {

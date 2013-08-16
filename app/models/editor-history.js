@@ -11,6 +11,7 @@ define([
     this.undoStack = [];
     this.redoStack = [];
 
+    // Store a state to determine whether we've changed a model/collection.
     this.previousState = null;
   }
 
@@ -30,23 +31,58 @@ define([
         this.undoStack.push( this.current );
       }
 
-      if ( _.isArray( target ) ) {
-        this.current = target.map(function( element ) {
-          return new Memento( element );
-        });
-      } else {
-        this.current = new Memento( target );
-      }
-
+      this.current = this.snapshot( target );
       this.redoStack = [];
     },
 
-    begin: function( target ) {
+    /**
+     * Take a snapshot of the current state of the target.
+     * Returns an array of mementos if target is an array.
+     * Returns a single memento otherwise.
+     */
+    snapshot: function( target ) {
+      if ( _.isArray( target ) ) {
+        return target.map(function( element ) {
+          return new Memento( element );
+        });
+      }
 
+      return new Memento( target );
     },
 
-    end: function() {
+    /**
+     * Begin tracking a target.
+     */
+    begin: function( target ) {
+      this.previousState = this.snapshot( target );
+      if ( !this.undoStack.length ) {
+        this.save( target );
+      }
+    },
 
+    /**
+     * Stop tracking a target and push changes to history if anything changed.
+     */
+    end: function() {
+      if ( !this.previousState ) {
+        return;
+      }
+
+      if ( _.isArray( this.previousState ) ) {
+        // Save changed targets.
+        var targets = this.previousState.filter(function( memento ) {
+          return !_.isEqual( memento.state, memento.target.toJSON() );
+        }).map(function( memento ) {
+          return memento.target;
+        });
+
+        this.save( targets );
+      } else {
+        var target = this.previousState.target;
+        if ( !_.isEqual( this.previousState.state, target.toJSON() ) ) {
+          this.save( target );
+        }
+      }
     },
 
     /**

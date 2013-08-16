@@ -148,13 +148,13 @@ define([
         // Enter select state only if we've selected something.
         if ( selection.size() ) {
           editor.set( 'state', State.SELECT );
-          history.save( selection.models );
+          history.begin( selection.models );
         } else {
           if ( Config.snapping ) {
             mouse.start = snapToGridLine( mouse.start.x, mouse.start.y );
           }
 
-          history.save( level );
+          history.begin( level );
           editor.set( 'state', State.DRAW );
         }
       }
@@ -192,7 +192,7 @@ define([
           }));
         }
 
-        history.save( level );
+        history.end();
         editor.set( 'state', State.DEFAULT );
       }
     };
@@ -219,11 +219,15 @@ define([
         if ( !mouse.direction ) {
           editor.select( level.hit( mouse.end.x, mouse.end.y ) );
           if ( !selection.size() ) {
+            history.begin( level );
             editor.set( 'state', State.DRAW );
+          } else {
+            history.begin( selection.models );
           }
         } else {
           editor.selectFirst();
           editor.set( 'state', State.TRANSFORM );
+          history.begin( selection.at(0) );
         }
       },
 
@@ -284,7 +288,7 @@ define([
       },
 
       mouseup: function() {
-        history.save( selection.models );
+        history.end();
         // We're only going to be transforming the very first object.
         editor.selectFirst();
         editor.set( 'state', State.TRANSFORM );
@@ -311,12 +315,14 @@ define([
           editor.select( level.hit( mouse.end.x, mouse.end.y ) );
           // If nothing, start drawing.
           if ( !selection.size() ) {
+            history.begin( level );
             editor.set( 'state', State.DRAW );
           } else {
+            history.begin( selection.models );
             editor.set( 'state', State.SELECT );
           }
         } else {
-
+          history.begin( selection.at(0) );
         }
       },
 
@@ -352,7 +358,7 @@ define([
         // Make sure we still have positive dimensions.
         selection.at(0).positiveDimensions();
         editor.set( 'offsets', [ Geometry.position( selection.at(0) ) ] );
-        history.save( selection.at(0) );
+        history.end();
 
         $element.css( 'cursor', 'default' );
         editor.set( 'state', State.SELECT );
