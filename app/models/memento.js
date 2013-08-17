@@ -15,6 +15,7 @@ define([
 
     /**
      * Makes sure that our target references the same object in collection.
+     * Don't do anything if the target is not in the collection.
      */
     reference: function( collection ) {
       if ( this.target instanceof Backbone.Collection ) {

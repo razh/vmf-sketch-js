@@ -5,6 +5,24 @@ define([
 ], function( _, Backbone, Memento ) {
   'use strict';
 
+  // Utility functions.
+
+  /**
+   * Converts an object to an array.
+   * Is the identity function if an array is passed in.
+   */
+  function toArray( object ) {
+    return _.isArray( object ) ? object : [ object ];
+  }
+
+  /**
+   * If the array is of length one, just return that element.
+   * Is the identity function otherwise.
+   */
+  function extractSingleton( array ) {
+    return array.length === 1 ? array[0] : array;
+  }
+
   function EditorHistory() {
     this.current = null;
 
@@ -16,10 +34,11 @@ define([
   }
 
   /**
-   * There are three types of history states:
+   * There are four types of history states:
    * - A Backbone.Model.
    * - A Backbone.Collection.
    * - An array of Backbone.Models.
+   * - An array of Backbone.Collections.
    */
   EditorHistory.prototype = {
     /**
@@ -42,9 +61,11 @@ define([
      */
     snapshot: function( target ) {
       if ( _.isArray( target ) ) {
-        return target.map(function( element ) {
+        var mementos = target.map(function( element ) {
           return new Memento( element );
         });
+
+        return extractSingleton( mementos );
       }
 
       return new Memento( target );
@@ -54,7 +75,13 @@ define([
      * Begin tracking a target.
      */
     begin: function( target ) {
+      // Can't track nothing.
+      if ( _.isEmpty( target ) ) {
+        return;
+      }
+
       this.previousState = this.snapshot( target );
+      // Save if we don't have a baseline history.
       if ( !this.undoStack.length ) {
         this.save( target );
       }
@@ -68,20 +95,16 @@ define([
         return;
       }
 
-      if ( _.isArray( this.previousState ) ) {
-        // Save changed targets.
-        var targets = this.previousState.filter(function( memento ) {
-          return !_.isEqual( memento.state, memento.target.toJSON() );
-        }).map(function( memento ) {
-          return memento.target;
-        });
+      var targets = toArray( this.previousState ).filter(function( memento ) {
+        return !_.isEqual( memento.state, memento.target.toJSON() );
+      }).map(function( memento ) {
+        return memento.target;
+      });
 
-        this.save( targets );
-      } else {
-        var target = this.previousState.target;
-        if ( !_.isEqual( this.previousState.state, target.toJSON() ) ) {
-          this.save( target );
-        }
+      // Save only if we have anything to save.
+      if ( targets.length ) {
+        // Don't save it as an array if there's only one object.
+        this.save( extractSingleton( targets ) );
       }
     },
 
@@ -100,19 +123,15 @@ define([
 
       this.current = forwardStack.pop();
 
-      // The current state is an array of mementos.
-      if ( _.isArray( this.current ) ) {
-        this.current.forEach(function( memento ) {
-          memento.restore();
-        });
-      } else {
-        this.current.restore();
+      var that = this;
+      toArray( this.current ).forEach(function( memento ) {
+        memento.restore();
 
         // Restore model references in mementos.
-        if ( this.current.target instanceof Backbone.Collection ) {
-          this.reference( this.current.target );
+        if ( memento.target instanceof Backbone.Collection ) {
+          that.reference( memento.target );
         }
-      }
+      });
 
       return this;
     },
@@ -130,9 +149,7 @@ define([
      */
     reference: function( collection ) {
       this.undoStack.concat( this.redoStack ).forEach(function( state ) {
-        var mementos = _.isArray( state ) ? state : [ state ];
-
-        mementos.forEach(function( memento ) {
+        toArray( state ).forEach(function( memento ) {
           memento.reference( collection );
         });
       });

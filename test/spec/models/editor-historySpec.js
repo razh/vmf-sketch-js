@@ -129,7 +129,7 @@ define(function( require ) {
         ]);
       });
 
-      it( 'restoring a Backbone.Collection from a memento may change level order', function() {
+      it( 'restoring a Backbone.Collection from a memento may change element order', function() {
         var rect0JSON = level.at(0).toJSON();
 
         var id0 = level.at(0).id,
@@ -273,13 +273,16 @@ define(function( require ) {
         var dx = -10,
             dy = -5;
 
+        expect( history.current ).toBe( null );
+
         // Select the first rectangle.
         editorView.input.mousedown({
           pageX: 25,
           pageY: 30
         });
 
-        expect( editor.get( 'selection' ).at(0) ).toBe( level.at(0) );
+        expect( history.current ).toBeTruthy();
+        expect( history.undoStack.length ).toBe(0);
 
         editorView.input.mousemove({
           pageX: 25 + dx,
@@ -287,21 +290,36 @@ define(function( require ) {
         });
 
         editorView.input.mouseup();
+
+        expect( history.undoStack.length ).toBe(1);
       });
 
-      it( 'no new states are created if a transformation is an identity', function() {
-        spyOn( history, 'save' );
+      it( 'no new states are created if a translation is an identity', function() {
+        spyOn( history, 'begin' ).andCallThrough();
+        spyOn( history, 'save' ).andCallThrough();
 
-        editor.set( 'state', State.TRANSFORM );
+        editor.set( 'state', State.SELECT );
 
         editorView.input.mousedown({
           pageX: 25,
-          pageY: 20
+          pageY: 25
         });
 
-        editorView.input.mousemove({
+        expect( editor.get( 'selection' ).size() ).toBe(1);
+        expect( history.undoStack.length ).toBe(0);
 
-        })
+        expect( history.begin ).toHaveBeenCalled();
+        expect( history.save ).toHaveBeenCalled();
+
+        editorView.input.mousemove({
+          pageX: 25,
+          pageY: 35
+        });
+
+        editorView.input.mouseup();
+
+        expect( history.current ).toBeTruthy();
+        expect( history.undoStack.length ).toBe(1);
       });
     });
 
