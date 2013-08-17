@@ -5,24 +5,9 @@ define([
 ], function( _, Backbone, Memento ) {
   'use strict';
 
-  // Utility functions.
-
   /**
-   * Converts an object to an array.
-   * Is the identity function if an array is passed in.
+   * A state is an array of Mementos.
    */
-  function toArray( object ) {
-    return _.isArray( object ) ? object : [ object ];
-  }
-
-  /**
-   * If the array is of length one, just return that element.
-   * Is the identity function otherwise.
-   */
-  function extractSingleton( array ) {
-    return array.length === 1 ? array[0] : array;
-  }
-
   function EditorHistory() {
     this.current = null;
 
@@ -39,6 +24,8 @@ define([
    * - A Backbone.Collection.
    * - An array of Backbone.Models.
    * - An array of Backbone.Collections.
+   *
+   * These states are all stored as an array of Mementos.
    */
   EditorHistory.prototype = {
     /**
@@ -56,19 +43,16 @@ define([
 
     /**
      * Take a snapshot of the current state of the target.
-     * Returns an array of mementos if target is an array.
-     * Returns a single memento otherwise.
+     * Returns an array of mementos.
      */
     snapshot: function( target ) {
       if ( _.isArray( target ) ) {
-        var mementos = target.map(function( element ) {
+        return target.map(function( element ) {
           return new Memento( element );
         });
-
-        return extractSingleton( mementos );
       }
 
-      return new Memento( target );
+      return [ new Memento( target ) ];
     },
 
     /**
@@ -95,7 +79,8 @@ define([
         return;
       }
 
-      var targets = toArray( this.previousState ).filter(function( memento ) {
+      // Get all targets that have changed since begin() was called.
+      var targets = this.previousState.filter(function( memento ) {
         return !_.isEqual( memento.state, memento.target.toJSON() );
       }).map(function( memento ) {
         return memento.target;
@@ -104,7 +89,7 @@ define([
       // Save only if we have anything to save.
       if ( targets.length ) {
         // Don't save it as an array if there's only one object.
-        this.save( extractSingleton( targets ) );
+        this.save( targets );
       }
     },
 
@@ -124,7 +109,7 @@ define([
       this.current = forwardStack.pop();
 
       var that = this;
-      toArray( this.current ).forEach(function( memento ) {
+      this.current.forEach(function( memento ) {
         memento.restore();
 
         // Restore model references in mementos.
@@ -149,7 +134,7 @@ define([
      */
     reference: function( collection ) {
       this.undoStack.concat( this.redoStack ).forEach(function( state ) {
-        toArray( state ).forEach(function( memento ) {
+        state.forEach(function( memento ) {
           memento.reference( collection );
         });
       });
