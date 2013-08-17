@@ -427,6 +427,11 @@ define([
           editor.clearSelection();
           editor.get( 'history' ).redo();
         }
+
+        if ( keyCommand( event, Config.commands.exit ) ) {
+          editor.clearSelection();
+          editor.set( 'state', State.DEFAULT );
+        }
       }
     };
   };

@@ -36,6 +36,10 @@ define(function() {
         which: 90, // Z.
         ctrl: true,
         shift: true
+      },
+
+      exit: {
+        which: 27
       }
     }
   };
