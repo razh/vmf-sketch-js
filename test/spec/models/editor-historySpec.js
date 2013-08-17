@@ -11,15 +11,13 @@ define(function( require ) {
 
     var history;
 
-    beforeEach(function() {
-      history = new EditorHistory();
-    });
-
     describe( 'Rect (Backbone.Model)', function() {
 
       var rect;
 
       beforeEach(function() {
+        history = new EditorHistory();
+
         rect = new Rect({
           x: 10,
           y: 20,
@@ -121,6 +119,8 @@ define(function( require ) {
       var level;
 
       beforeEach(function() {
+        history = new EditorHistory();
+
         level = new Level([
           { x: 10, y: 50, width:  90, height: 130 },
           { x: 20, y: 60, width: 100, height: 140 },
@@ -247,6 +247,8 @@ define(function( require ) {
       var $canvas, canvas, level, editor, editorView;
 
       beforeEach(function() {
+        history = new EditorHistory();
+
         $canvas = $( '<canvas></canvas>');
         canvas  = $canvas[0];
 
@@ -320,6 +322,91 @@ define(function( require ) {
 
         expect( history.current ).toBeTruthy();
         expect( history.undoStack.length ).toBe(1);
+      });
+
+      it( 'editing an array of objects and then editing each object in turn works as intended', function() {
+        // Select two rectangles.
+        editorView.input.mousedown({
+          pageX: 30,
+          pageY: 50
+        });
+
+        expect( editor.get( 'selection' ).size() ).toBe(2);
+
+        editorView.input.mousemove({
+          pageX: 20,
+          pageY: 20
+        });
+
+        editorView.input.mouseup();
+
+        expect( history.current ).toBeTruthy();
+        expect( history.undoStack.length ).toBe(1);
+
+        // Now select the first rect and move it.
+        var x0 = level.at(0).get( 'x' ),
+            y0 = level.at(0).get( 'y' );
+
+        var dx0 = 10,
+            dy0 = 15;
+
+        editorView.input.mousedown({
+          pageX: x0,
+          pageY: y0
+        });
+
+        editorView.input.mousemove({
+          pageX: x0 + dx0,
+          pageY: y0 + dy0
+        });
+
+        editorView.input.mouseup();
+
+        expect( history.current[0].target ).toBe( level.at(0) );
+        expect( history.undoStack.length ).toBe(2);
+
+        // Select the second rect.
+        var x1 = level.at(1).get( 'x' ),
+            y1 = level.at(1).get( 'y' );
+
+        var dx1 = -20,
+            dy1 = -12;
+
+        // If we were to select the second rect at its (x, y), we would get the
+        // first rect instead.
+        editorView.input.mousedown({
+          pageX: x1 + level.at(1).get( 'width' ),
+          pageY: y1 + level.at(1).get( 'height' )
+        });
+
+        editorView.input.mousemove({
+          pageX: x1 + level.at(1).get( 'width' ) + dx1,
+          pageY: y1 + level.at(1).get( 'width' ) + dy1
+        });
+
+        editorView.input.mouseup();
+
+        expect( history.undoStack.length ).toBe(3);
+        expect( level.at(0).get( 'x' ) ).toBe( x0 + dx0 );
+        expect( level.at(1).get( 'x' ) ).toBe( x1 + dx1 );
+
+        history.undo();
+        expect( level.at(0).get( 'x' ) ).toBe( x0 + dx0 );
+        // This fails right now. The previous state of the second triangle is not
+        // saved.
+        expect( level.at(1).get( 'x' ) ).toBe( x1 );
+
+        history.undo();
+        expect( level.at(0).get( 'x' ) ).toBe( x0 );
+        expect( level.at(1).get( 'x' ) ).toBe( x1 );
+
+        history.redo();
+        expect( level.at(0).get( 'x' ) ).toBe( x0 + dx0 );
+        expect( level.at(1).get( 'x' ) ).toBe( x1 );
+
+        history.redo();
+        expect( level.at(0).get( 'x' ) ).toBe( x0 + dx0 );
+        expect( level.at(1).get( 'x' ) ).toBe( x1 + dx1 );
       });
     });
 

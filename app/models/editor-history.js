@@ -79,12 +79,25 @@ define([
         return;
       }
 
-      // Get all targets that have changed since begin() was called.
-      var targets = this.previousState.filter(function( memento ) {
+      // What do we know has already changed?
+      var currentTargets = this.current ? this.current.map(function( memento ) {
+        return memento.target;
+      }) : [];
+
+      // Get all mementos that have changed since begin() was called.
+      var mementos = this.previousState.filter(function( memento ) {
         return !_.isEqual( memento.state, memento.target.toJSON() );
-      }).map(function( memento ) {
+      });
+
+      var targets = mementos.map(function( memento ) {
         return memento.target;
       });
+
+      // Save the previous state if current does not already know about it.
+      // TODO: Doesn't handle transforming one element, then an array of elements.
+      if ( _.difference( currentTargets, targets ).length ) {
+        this.current = this.current.concat( mementos );
+      }
 
       // Save only if we have anything to save.
       if ( targets.length ) {
