@@ -417,6 +417,16 @@ define([
         mouse.end.y = Number.NaN;
       },
 
+      mouseenter: function() {
+        if ( selection.size() ) {
+          editor.set( 'state', State.SELECT );
+        }
+      },
+
+      mouseleave: function() {
+        editor.set( 'state', State.DEFAULT );
+      },
+
       keydown: function( event ) {
         if ( keyCommand( event, Config.commands.undo ) ) {
           editor.clearSelection();

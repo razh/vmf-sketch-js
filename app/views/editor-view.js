@@ -22,7 +22,10 @@ define([
       this.$el.on({
         mousedown: this.input.mousedown,
         mousemove: this.input.mousemove,
-        mouseup: this.input.mouseup
+        mouseup: this.input.mouseup,
+
+        mouseenter: this.input.mouseenter,
+        mouseleave: this.input.mouseleave
       });
 
       $( document ).on({
