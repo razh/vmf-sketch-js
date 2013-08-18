@@ -442,6 +442,15 @@ define([
           editor.clearSelection();
           editor.set( 'state', State.DEFAULT );
         }
+
+        if ( keyCommand( event, Config.commands.remove ) ) {
+          history.begin( level );
+          level.remove( selection.models );
+          history.end();
+
+          editor.clearSelection();
+          editor.set( 'state', State.DEFAULT );
+        }
       }
     };
   };

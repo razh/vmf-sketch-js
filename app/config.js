@@ -40,6 +40,10 @@ define(function() {
 
       exit: {
         which: 27
+      },
+
+      remove: {
+        which: 46
       }
     }
   };
