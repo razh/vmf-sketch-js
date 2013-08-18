@@ -237,7 +237,7 @@ define(function( require ) {
       });
     });
 
-    describe( 'Canvas interaction', function() {
+    describe( 'Canvas/EditorView integration tests', function() {
 
       var Editor     = require( 'models/editor' ),
           EditorView = require( 'views/editor-view' );
@@ -283,7 +283,7 @@ define(function( require ) {
           pageY: 30
         });
 
-        expect( history.current ).toBeTruthy();
+        expect( history.current.length ).toBe(1);
         expect( history.undoStack.length ).toBe(0);
 
         editorView.input.mousemove({
@@ -324,7 +324,7 @@ define(function( require ) {
         expect( history.undoStack.length ).toBe(1);
       });
 
-      it( 'editing an array of objects and then editing each object in turn works as intended', function() {
+      it( 'editing an array of objects, then editing each object generates a proper history', function() {
         // Select two rectangles.
         editorView.input.mousedown({
           pageX: 30,
@@ -340,7 +340,8 @@ define(function( require ) {
 
         editorView.input.mouseup();
 
-        expect( history.current ).toBeTruthy();
+        // Two rectangles have chaned.
+        expect( history.current.length ).toBe(2);
         expect( history.undoStack.length ).toBe(1);
 
         // Now select the first rect and move it.
@@ -407,6 +408,97 @@ define(function( require ) {
         history.redo();
         expect( level.at(0).get( 'x' ) ).toBe( x0 + dx0 );
         expect( level.at(1).get( 'x' ) ).toBe( x1 + dx1 );
+      });
+
+      it( 'editing an object, then an array of objects generates a proper history', function() {
+        var rect0 = level.at(0),
+            rect1 = level.at(1),
+            rect2 = level.at(2);
+
+        var x0 = rect0.get( 'x' ),
+            x1 = rect1.get( 'x' ),
+            y1 = rect1.get( 'y' );
+
+        // Select the third retangle.
+        var x2 = rect2.get( 'x' ),
+            y2 = rect2.get( 'y' );
+
+        var dx2 = 40,
+            dy2 = 20;
+
+        editorView.input.mousedown({
+          pageX: x2,
+          pageY: y2
+        });
+
+        editorView.input.mousemove({
+          pageX: x2 + dx2,
+          pageY: y2 + dx2
+        });
+
+        editorView.input.mouseup();
+
+        expect( history.current.length ).toBe(1);
+        expect( rect2.get( 'x' ) ).toBe( x2 + dx2 );
+        expect( rect0.get( 'x' ) ).toBe( x0 );
+        expect( rect1.get( 'x' ) ).toBe( x1 );
+
+        history.undo();
+        expect( rect2.get( 'x' ) ).toBe( x2 );
+        expect( rect0.get( 'x' ) ).toBe( x0 );
+        expect( rect1.get( 'x' ) ).toBe( x1 );
+
+        history.redo();
+        expect( rect2.get( 'x' ) ).toBe( x2 + dx2 );
+        expect( rect0.get( 'x' ) ).toBe( x0 );
+        expect( rect1.get( 'x' ) ).toBe( x1 );
+
+        // Now select the first and second rectangles.
+        var dx = -50,
+            dy = -60;
+
+        editorView.input.mousedown({
+          pageX: x1,
+          pageY: y1
+        });
+
+        editorView.input.mousemove({
+          pageX: x1 + dx,
+          pageY: y1 + dy
+        });
+
+        editorView.input.mouseup();
+
+        expect( history.current.length ).toBe(2);
+        expect( rect0.get( 'x' ) ).toBe( x0 + dx );
+        expect( rect1.get( 'x' ) ).toBe( x1 + dx );
+        expect( rect2.get( 'x' ) ).toBe( x2 + dx2 );
+
+        history.undo();
+        expect( rect0.get( 'x' ) ).toBe( x0 );
+        expect( rect1.get( 'x' ) ).toBe( x1 );
+        expect( rect2.get( 'x' ) ).toBe( x2 + dx2 );
+
+        history.redo();
+        expect( rect0.get( 'x' ) ).toBe( x0 + dx );
+        expect( rect1.get( 'x' ) ).toBe( x1 + dx );
+        expect( rect2.get( 'x' ) ).toBe( x2 + dx2 );
+
+        history.undo();
+        history.undo();
+        expect( rect0.get( 'x' ) ).toBe( x0 );
+        expect( rect1.get( 'x' ) ).toBe( x1 );
+        expect( rect2.get( 'x' ) ).toBe( x2 );
+
+        history.redo();
+        expect( rect0.get( 'x' ) ).toBe( x0 );
+        expect( rect1.get( 'x' ) ).toBe( x1 );
+        expect( rect2.get( 'x' ) ).toBe( x2 + dx2 );
+
+        history.redo();
+        expect( rect0.get( 'x' ) ).toBe( x0 + dx );
+        expect( rect1.get( 'x' ) ).toBe( x1 + dx );
+        expect( rect2.get( 'x' ) ).toBe( x2 + dx2 );
       });
     });
 

@@ -79,11 +79,6 @@ define([
         return;
       }
 
-      // What do we know has already changed?
-      var currentTargets = this.current ? this.current.map(function( memento ) {
-        return memento.target;
-      }) : [];
-
       // Get all mementos that have changed since begin() was called.
       var mementos = this.previousState.filter(function( memento ) {
         return !_.isEqual( memento.state, memento.target.toJSON() );
@@ -93,15 +88,10 @@ define([
         return memento.target;
       });
 
-      // Save the previous state if current does not already know about it.
-      // TODO: Doesn't handle transforming one element, then an array of elements.
-      if ( _.difference( currentTargets, targets ).length ) {
-        this.current = this.current.concat( mementos );
-      }
-
       // Save only if we have anything to save.
       if ( targets.length ) {
-        // Don't save it as an array if there's only one object.
+        // Save the previous state if current does not already know about it.
+        this.current = this.current.concat( mementos );
         this.save( targets );
       }
     },
