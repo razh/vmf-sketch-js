@@ -268,5 +268,30 @@ define(function( require ) {
       history.redo();
       expect( model.get( 'foo' ) ).toBe( 10 );
     });
+
+    it( 'begin() and end() allow combining multiple minor edits into a single state', function() {
+      var model = new Model({
+        foo: 10
+      });
+
+      history.begin( model );
+      model.set( 'foo', 30 );
+      model.set( 'foo', 50 );
+      model.set( 'foo', 100 );
+      history.end();
+
+      expect( history.current.length ).toBe(1);
+      expect( model.get( 'foo' ) ).toBe( 100 );
+
+      history.undo();
+      expect( model.get( 'foo' ) ).toBe( 10 );
+
+      // Doesn't do anything.
+      history.undo();
+      expect( model.get( 'foo' ) ).toBe( 10 );
+
+      history.redo();
+      expect( model.get( 'foo' ) ).toBe( 100 );
+    });
   });
 });

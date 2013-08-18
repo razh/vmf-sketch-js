@@ -66,7 +66,7 @@ define([
 
       this.previousState = this.snapshot( target );
       // Save if we don't have a baseline history.
-      if ( !this.undoStack.length ) {
+      if ( !this.current ) {
         this.save( target );
       }
     },
