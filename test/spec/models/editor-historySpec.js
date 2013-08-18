@@ -44,9 +44,9 @@ define(function( require ) {
         history.save( model );
         history.undo();
 
-        // x has its old value.
+        // foo has its old value.
         expect( model.get( 'foo' ) ).toBe( 10 );
-        // But not y.
+        // But not bar.
         expect( model.get( 'bar' ) ).toBe( 20 );
 
         // Nothing happens.
@@ -64,7 +64,7 @@ define(function( require ) {
         expect( model.get( 'foo' ) ).toBe( 10 );
 
         history.redo();
-        // x has its new value.
+        // foo has its new value.
         expect( model.get( 'foo' ) ).toBe( 200 );
 
         // Nothing happens.
@@ -72,7 +72,7 @@ define(function( require ) {
         expect( model.get( 'foo' ) ).toBe( 200 );
       });
 
-      it( 'allows for multiple undos and redos', function() {
+      it( 'multiple undos and redos', function() {
         history.save( model );
         model.set( 'foo', 200 );
         history.save( model );
@@ -110,7 +110,7 @@ define(function( require ) {
         expect( model.get( 'foo' ) ).toBe( 300 );
       });
 
-      it( 'save() rewrites history if in the past', function() {
+      it( 'save() erases future redo history if in the past', function() {
         history.save( model );
         model.set( 'foo', 200 );
         history.save( model );
@@ -230,7 +230,7 @@ define(function( require ) {
         expect( collection.get( id0 ).get( 'foo' ) ).toBe( 10 );
       });
 
-      it( 'allows the batch-saving of multiple models at once', function() {
+      it( 'batch-saving of multiple models at once', function() {
         expect( collection.at(0).get( 'foo' ) ).toBe( 10 );
         // Attempt to save an array.
         history.save( collection.models );
@@ -247,51 +247,116 @@ define(function( require ) {
         expect( collection.at(0).get( 'foo' ) ).toBe( 200 );
         expect( collection.at(1).get( 'foo' ) ).toBe( 210 );
       });
+
+      it( 'batch-saving of multiple collections at once', function() {
+        var tempCollection = new Collection([
+          { foo: 217, bar: 300 },
+          { foo: 'b', bar: 'c' }
+        ]);
+
+        var rect1 = tempCollection.at(1);
+
+        history.begin( rect1 );
+        rect1.set( 'foo', 123 );
+        history.end();
+
+        history.begin( [ collection, tempCollection ] );
+        collection.remove( collection.at(0) );
+        tempCollection.remove( rect1 );
+        history.end();
+
+        expect( collection.length ).toBe(3);
+        expect( tempCollection.length ).toBe(1);
+        expect( tempCollection.at(0).get( 'foo' ) ).toBe( 217 );
+
+        history.undo();
+        expect( collection.length ).toBe(4);
+        expect( tempCollection.length ).toBe(2);
+        expect( tempCollection.at(1).get( 'foo' ) ).toBe( 123 );
+
+        history.undo();
+        expect( collection.length ).toBe(4);
+        expect( tempCollection.length ).toBe(2);
+        expect( tempCollection.at(1).get( 'foo' ) ).toBe( 'b' );
+
+        history.redo();
+        expect( collection.length ).toBe(4);
+        expect( tempCollection.length ).toBe(2);
+        expect( tempCollection.at(1).get( 'foo' ) ).toBe( 123 );
+
+        history.redo();
+        expect( collection.length ).toBe(3);
+        expect( tempCollection.length ).toBe(1);
+        expect( tempCollection.at(0).get( 'foo' ) ).toBe( 217 );
+      });
     });
 
-    it( 'clear() empties the history', function() {
-      var model = new Model({
-        foo: 10
+    describe( 'Helper methods', function() {
+
+      beforeEach(function() {
+        history = new EditorHistory();
       });
 
-      history.save( model );
-      model.set( 'foo', 200 );
-      history.save( model );
-      history.undo();
-      expect( history.redoStack.length ).toBe(1);
+      it( 'clear() empties the history', function() {
+        var model = new Model({
+          foo: 10
+        });
 
-      history.clear();
-      expect( history.undoStack.length ).toBe(0);
-      expect( history.redoStack.length ).toBe(0);
+        history.save( model );
+        model.set( 'foo', 200 );
+        history.save( model );
+        history.undo();
+        expect( history.redoStack.length ).toBe(1);
 
-      // Redo does nothing.
-      history.redo();
-      expect( model.get( 'foo' ) ).toBe( 10 );
-    });
+        history.clear();
+        expect( history.undoStack.length ).toBe(0);
+        expect( history.redoStack.length ).toBe(0);
 
-    it( 'begin() and end() allow combining multiple minor edits into a single state', function() {
-      var model = new Model({
-        foo: 10
+        // Redo does nothing.
+        history.redo();
+        expect( model.get( 'foo' ) ).toBe( 10 );
       });
 
-      history.begin( model );
-      model.set( 'foo', 30 );
-      model.set( 'foo', 50 );
-      model.set( 'foo', 100 );
-      history.end();
+      it( 'begin() and end() allow combining multiple minor edits into a single state', function() {
+        var model = new Model({
+          foo: 10
+        });
 
-      expect( history.current.length ).toBe(1);
-      expect( model.get( 'foo' ) ).toBe( 100 );
+        history.begin( model );
+        model.set( 'foo', 30 );
+        model.set( 'foo', 50 );
+        model.set( 'foo', 100 );
+        history.end();
 
-      history.undo();
-      expect( model.get( 'foo' ) ).toBe( 10 );
+        expect( history.current.length ).toBe(1);
+        expect( model.get( 'foo' ) ).toBe( 100 );
 
-      // Doesn't do anything.
-      history.undo();
-      expect( model.get( 'foo' ) ).toBe( 10 );
+        history.undo();
+        expect( model.get( 'foo' ) ).toBe( 10 );
 
-      history.redo();
-      expect( model.get( 'foo' ) ).toBe( 100 );
+        // Doesn't do anything.
+        history.undo();
+        expect( model.get( 'foo' ) ).toBe( 10 );
+
+        history.redo();
+        expect( model.get( 'foo' ) ).toBe( 100 );
+      });
+
+      it( 'begin()/end() do not save states when there are no changes', function() {
+        var collection = new Collection([
+          { foo: 10, bar: 'a' },
+          { foo: 20, bar: 'b' }
+        ]);
+
+        // Note: begin() will save this collection state as a baseline.
+        history.begin( collection );
+        collection.at(0).set( 'foo', 30 );
+        collection.at(0).set( 'foo', 10 );
+        history.end();
+
+        expect( history.current.length ).toBe(1);
+        expect( history.undoStack.length ).toBe(0);
+      });
     });
   });
 });
