@@ -8,11 +8,14 @@ define(function( require ) {
 
     var $ = require( 'jquery' );
 
+    // Turn off snapping.
+    var Config = require( 'config' )
+    Config.snapping = false;
+
     var Editor      = require( 'models/editor' ),
         EditorView  = require( 'views/editor-view' ),
         Level       = require( 'collections/level' ),
-        Rect        = require( 'models/rect' ),
-        Config      = require( 'config' );
+        Rect        = require( 'models/rect' );
 
     var State = Editor.State;
 
@@ -40,8 +43,6 @@ define(function( require ) {
 
       mouse = editorView.input.mouse;
 
-      // Turn off snapping.
-      Config.snapping = false;
     });
 
     it( 'starts off in the default state', function() {
