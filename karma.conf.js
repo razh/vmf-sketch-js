@@ -12,6 +12,12 @@ module.exports = function(config) {
     frameworks: ['jasmine', 'requirejs'],
 
 
+    // Don't use html2js preprocessor for html files.
+    preprocessors: {
+      '**/*.html': []
+    },
+
+
     // list of files / patterns to load in the browser
     files: [
       // included: false -> Load these files with RequireJS instead.
