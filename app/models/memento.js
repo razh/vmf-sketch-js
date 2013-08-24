@@ -10,7 +10,9 @@ define([
 
   Memento.prototype = {
     restore: function() {
-      this.target.set( this.state );
+      if ( this.target ) {
+        this.target.set( this.state );
+      }
     },
 
     /**
@@ -18,7 +20,7 @@ define([
      * Don't do anything if the target is not in the collection.
      */
     reference: function( collection ) {
-      if ( this.target instanceof Backbone.Collection ) {
+      if ( !collection || this.target instanceof Backbone.Collection ) {
         return;
       }
 

@@ -58,7 +58,7 @@ define(function( require ) {
         pageY: 30
       });
 
-      expect( history.current.length ).toBe(1);
+      expect( history.current ).toBe( null );
       expect( history.undoStack.length ).toBe(0);
 
       editorView.input.mousemove({
@@ -86,7 +86,7 @@ define(function( require ) {
       expect( history.undoStack.length ).toBe(0);
 
       expect( history.begin ).toHaveBeenCalled();
-      expect( history.save ).toHaveBeenCalled();
+      expect( history.save ).not.toHaveBeenCalled();
 
       editorView.input.mousemove({
         pageX: 25,

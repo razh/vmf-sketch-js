@@ -15,7 +15,7 @@ define([
     this.redoStack = [];
 
     // Store a state to determine whether we've changed a model/collection.
-    this.previousState = null;
+    this.previous = null;
   }
 
   /**
@@ -33,11 +33,19 @@ define([
      * Wipes the redo stack.
      */
     save: function( target ) {
+      this.store( this.snapshot( target ) );
+    },
+
+    /**
+     * Saves an array of mementos.
+     * Wipes the redo stack.
+     */
+    store: function( state ) {
       if ( this.current ) {
         this.undoStack.push( this.current );
       }
 
-      this.current = this.snapshot( target );
+      this.current = state;
       this.redoStack = [];
     },
 
@@ -64,23 +72,19 @@ define([
         return;
       }
 
-      this.previousState = this.snapshot( target );
-      // Save if we don't have a baseline history.
-      if ( !this.current ) {
-        this.save( target );
-      }
+      this.previous = this.snapshot( target );
     },
 
     /**
      * Stop tracking a target and push changes to history if anything changed.
      */
     end: function() {
-      if ( !this.previousState ) {
+      if ( !this.previous ) {
         return;
       }
 
       // Get all mementos that have changed since begin() was called.
-      var mementos = this.previousState.filter(function( memento ) {
+      var mementos = this.previous.filter(function( memento ) {
         return !_.isEqual( memento.state, memento.target.toJSON() );
       });
 
@@ -90,6 +94,11 @@ define([
 
       // Save only if we have anything to save.
       if ( targets.length ) {
+        // Save if we don't have a baseline history.
+        if ( !this.current ) {
+          this.store( this.previous );
+        }
+
         // Save the previous state if current does not already know about it.
         this.current = this.current.concat( mementos );
         this.save( targets );
@@ -101,7 +110,7 @@ define([
      */
     timeTravel: function( forwardStack, backwardStack ) {
       // Don't do anything if we can't time travel further.
-      if ( !forwardStack.length ) {
+      if ( !forwardStack || !backwardStack || !forwardStack.length ) {
         return;
       }
 
@@ -127,6 +136,9 @@ define([
     undo: function() { return this.timeTravel( this.undoStack, this.redoStack ); },
     redo: function() { return this.timeTravel( this.redoStack, this.undoStack ); },
 
+    canUndo: function() { return this.undoStack.length; },
+    canRedo: function() { return this.redoStack.length; },
+
     clear: function() {
       this.undoStack = [];
       this.redoStack = [];
@@ -134,6 +146,8 @@ define([
 
     /**
      * Goes through the undo and redo stacks and rebuilds references to models.
+     * Warning: this is an O(n*m) operation, where n is the number of mementos
+     * in the history stacks, and m is the size of the collection.
      */
     reference: function( collection ) {
       this.undoStack.concat( this.redoStack ).forEach(function( state ) {

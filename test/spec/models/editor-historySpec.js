@@ -354,7 +354,7 @@ define(function( require ) {
         collection.at(0).set( 'foo', 10 );
         history.end();
 
-        expect( history.current.length ).toBe(1);
+        expect( history.current ).toBe( null );
         expect( history.undoStack.length ).toBe(0);
       });
     });
