@@ -7,7 +7,7 @@ define(function( require ) {
         Backbone = require( 'backbone' );
 
     var EditorHistory = require( 'models/editor-history' ),
-        Mememto       = require( 'models/memento' );
+        Memento       = require( 'models/memento' );
 
     var Model = Backbone.Model.extend({
       defaults: function() {
@@ -153,7 +153,7 @@ define(function( require ) {
         expect( collection.get( id0 ) ).toBe( collection.at(0) );
         expect( collection.pluck( 'id' ) ).toEqual( [ id0, id1, id2, id3 ] );
 
-        var memento = new Mememto( collection );
+        var memento = new Memento( collection );
         collection.remove( collection.at(0) );
         memento.restore();
         expect( collection.pluck( 'id' ) ).toEqual( [ id1, id2, id3, id0 ] );
@@ -170,7 +170,7 @@ define(function( require ) {
         collection.set( collection.toJSON() );
         expect( collection.at(0).id ).toBe( id0 );
 
-        var memento = new Mememto( collection );
+        var memento = new Memento( collection );
         expect( memento.state[0].id ).toBe( id0 );
         memento.restore();
         expect( collection.at(0).id ).toBe( id0 );

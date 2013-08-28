@@ -5,19 +5,29 @@ define([
 ], function( _, Backbone, Geometry ) {
   'use strict';
 
-  var Corner = {
-    TOP_LEFT:      9, // 1001
-    TOP_RIGHT:     3, // 0011
-    BOTTOM_LEFT:  12, // 1100
-    BOTTOM_RIGHT:  6, // 0110
-  };
-
   var Edge = {
     TOP:    1, // 0001
     RIGHT:  2, // 0010
     BOTTOM: 4, // 0100
     LEFT:   8  // 1000
   };
+
+  var Corner = {
+    TOP_LEFT:     Edge.TOP + Edge.LEFT,    // 1001
+    TOP_RIGHT:    Edge.TOP + Edge.RIGHT,   // 0011
+    BOTTOM_LEFT:  Edge.BOTTOM + Edge.LEFT, // 1100
+    BOTTOM_RIGHT: Edge.BOTTOM + Edge.RIGHT // 0110
+  };
+
+  function Vertex( x, y, z ) {
+    this.x = x || 0.0;
+    this.y = y || 0.0;
+    this.z = z || 0.0;
+  }
+
+  function Plane( points ) {
+    this.points = points || [];
+  }
 
   var Rect = Backbone.Model.extend({
     defaults: function() {
