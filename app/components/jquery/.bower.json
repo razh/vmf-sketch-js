@@ -17,5 +17,6 @@
   },
   "_source": "git://github.com/components/jquery.git",
   "_target": "~2.0.3",
+  "_originalSource": "jquery",
   "_direct": true
 }
