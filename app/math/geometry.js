@@ -49,11 +49,11 @@ define([
 
     // Determine the nearest parameter on the line segment to the point.
     var t = ( ( x - x0 ) * ( x1 - x0 ) + ( y - y0 ) * ( y1 - y0 ) ) / lengthSquared;
-    if ( t < 0 ) {
+    if ( t <= 0 ) {
       return distanceSquared( x, y, x0, y0 );
     }
 
-    if ( t > 1 ) {
+    if ( t >= 1 ) {
       return distanceSquared( x, y, x1, y1 );
     }
 
