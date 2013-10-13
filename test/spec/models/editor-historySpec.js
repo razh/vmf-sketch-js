@@ -141,23 +141,36 @@ define(function( require ) {
         ]);
       });
 
-      it( 'restoring a Backbone.Collection from a memento may change element order', function() {
-        var model0JSON = collection.at(0).toJSON();
+      it( 'restoring a Backbone.Collection from a memento does not change element order', function() {
+          var model0JSON = collection.at(0).toJSON(),
+              model1JSON = collection.at(1).toJSON();
 
-        var id0 = collection.at(0).id,
-            id1 = collection.at(1).id,
-            id2 = collection.at(2).id,
-            id3 = collection.at(3).id;
+          var id0 = collection.at(0).id,
+              id1 = collection.at(1).id,
+              id2 = collection.at(2).id,
+              id3 = collection.at(3).id;
 
-        expect( collection.at(0).id ).toBe( id0 );
-        expect( collection.get( id0 ) ).toBe( collection.at(0) );
-        expect( collection.pluck( 'id' ) ).toEqual( [ id0, id1, id2, id3 ] );
+          var originalOrderIds = [ id0, id1, id2, id3 ];
 
-        var memento = new Memento( collection );
-        collection.remove( collection.at(0) );
-        memento.restore();
-        expect( collection.pluck( 'id' ) ).toEqual( [ id1, id2, id3, id0 ] );
-        expect( collection.get( id0 ).toJSON() ).toEqual( model0JSON );
+          expect( collection.at(0).id ).toBe( id0 );
+          expect( collection.get( id0 ) ).toBe( collection.at(0) );
+          expect( collection.pluck( 'id' ) ).toEqual( originalOrderIds );
+
+          // Remove from collection beginning.
+          var memento = new Memento( collection );
+          collection.remove( collection.at(0) );
+
+          memento.restore();
+          expect( collection.pluck( 'id' ) ).toEqual( originalOrderIds );
+          expect( collection.get( id0 ).toJSON() ).toEqual( model0JSON );
+
+          // Now we remove from the center of the collection.
+          memento = new Memento( collection );
+          collection.remove( collection.at(1) );
+
+          memento.restore();
+          expect( collection.pluck( 'id' ) ).toEqual( originalOrderIds );
+          expect( collection.get( id1 ).toJSON() ).toEqual( model1JSON );
       });
 
       it( 'restoring a Backbone.Collection from a memento does not change ids', function() {
